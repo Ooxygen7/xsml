@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>巡狩名录</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Shippori+Mincho:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --main-bg-color: #050202;
+            --primary-text-color: #e6d9c9;
+            --accent-color: #d72323;
+            --accent-color-dark: #9f1919;
+            --border-color: rgba(215, 35, 35, 0.3);
+            --font-jp-serif: 'Noto Serif JP', 'Shippori Mincho', serif;
+            --transition-speed-fast: 0.4s;
+            --transition-speed-med: 0.8s;
+            --transition-speed-slow: 1.2s;
+        }
+
+        /* --- 基础与重置 --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        html, body {
+            height: 100%;
+            overflow: hidden; /* 防止浏览器主滚动条出现 */
+        }
+        body {
+            background-color: var(--main-bg-color);
+            color: var(--primary-text-color);
+            font-family: var(--font-jp-serif);
+            background-image: url('https://i.pinimg.com/originals/3b/38/b3/3b38b3424172731b816a1b183416972e.gif');
+            background-size: cover;
+            background-position: center center;
+        }
+
+        /* --- 滚动容器与页面 --- */
+        #scroll-container {
+            width: 100%;
+            height: 100%;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory; /* 强制Y轴滚动吸附 */
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        #scroll-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scroll-page {
+            width: 100vw;
+            height: 100vh;
+            scroll-snap-align: start; /* 吸附到视口顶部 */
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            overflow: hidden; /* 防止页面内部内容溢出影响布局 */
+        }
+
+        /* --- 主页样式 --- */
+        #home-page .home-content {
+            text-align: center;
+            color: white;
+            z-index: 1;
+        }
+        #home-page h1 {
+            font-size: clamp(4rem, 15vw, 12rem);
+            font-weight: 700;
+            letter-spacing: 0.5em;
+            text-shadow: 0 0 20px var(--accent-color), 0 0 50px var(--accent-color-dark);
+            line-height: 1.2;
+            animation: text-glow 4s infinite ease-in-out;
+            margin-right: -0.5em;
+        }
+        #home-page p {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            letter-spacing: 0.2em;
+            opacity: 0.8;
+            margin-top: 1rem;
+        }
+        @keyframes text-glow {
+            0%, 100% { text-shadow: 0 0 20px var(--accent-color), 0 0 50px var(--accent-color-dark); }
+            50% { text-shadow: 0 0 30px var(--accent-color), 0 0 70px var(--accent-color-dark); }
+        }
+        
+        /* --- 通用淡入效果 --- */
+        .fade-in-on-load {
+            opacity: 0;
+            animation: content-enter 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) 4s forwards;
+        }
+        @keyframes content-enter {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px) scale(0.98); 
+                filter: blur(3px);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1);
+                filter: blur(0px);
+            }
+        }
+        
+        /* --- 向下滚动箭头 --- */
+        .scroll-down-arrow {
+            position: absolute;
+            bottom: 5vh;
+            left: 50%;
+            z-index: 5;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+            animation: bounce 2.5s infinite ease-in-out;
+        }
+        .scroll-down-arrow svg {
+            width: 35px;
+            height: 35px;
+            stroke: var(--primary-text-color);
+            stroke-width: 2;
+            fill: none;
+            filter: drop-shadow(0 0 5px var(--primary-text-color));
+        }
+        .scroll-down-arrow.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translate(-50%, 0); }
+            40% { transform: translate(-50%, -20px); }
+            60% { transform: translate(-50%, -10px); }
+        }
+
+        /* --- 加载动画 --- */
+        #loader {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--main-bg-color);
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            transition: opacity 1s ease-out;
+        }
+        #loader.loader-hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #loader.loader-hidden .loader-rings,
+        #loader.loader-hidden #loader-symbol,
+        #loader.loader-hidden #loader-text {
+            transition: all 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+            transform: scale(1.5);
+            opacity: 0;
+            filter: blur(5px);
+            will-change: transform, opacity, filter;
+        }
+
+        .loader-rings {
+            position: absolute;
+            width: 30vw; height: 30vw;
+            max-width: 400px; max-height: 400px;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .ring {
+            position: absolute;
+            width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0;
+        }
+        .ring:nth-child(1) { animation: ring-appear 3s 0.2s ease-out forwards, rotate-ring 1.4s linear infinite; }
+        .ring:nth-child(2) { width: 80%; height: 80%; animation: ring-appear 3s 0.4s ease-out forwards, rotate-ring-reverse 2.3s linear infinite; }
+        .ring:nth-child(3) { width: 60%; height: 60%; animation: ring-appear 3s 0.6s ease-out forwards, rotate-ring 1.4s linear infinite; }
+        .ring-svg { width: 100%; height: 100%; fill: none; stroke: rgba(215, 35, 35, 0.4); stroke-width: 1; overflow: visible; }
+        .ring-deco { fill: rgba(215, 35, 35, 0.4); stroke: none; }
+        
+        #loader-symbol {
+            font-size: 7vw;
+            color: var(--accent-color);
+            text-shadow: 0 0 20px var(--accent-color), 0 0 40px var(--accent-color-dark);
+            opacity: 0;
+            padding: 1rem;
+            z-index: 1;
+            animation: simpleFadeIn 1s 0.2s ease-out forwards, seal-glow 3s 1s infinite ease-in-out;
+        }
+        #loader-text { 
+            font-size: clamp(0.9rem, 1.5vw, 1.1rem); 
+            letter-spacing: 0.1em; 
+            opacity: 0; 
+            z-index: 1; 
+            animation: simpleFadeIn 1s 0.2s ease-out forwards;
+            color: rgba(230, 217, 201, 0.7);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+        }
+
+        @keyframes ring-appear { 0% { opacity: 0; transform: scale(0.8); } 50% { opacity: 0.6; } 100% { opacity: 0.8; transform: scale(1); } }
+        @keyframes rotate-ring { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes rotate-ring-reverse { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+        
+        @keyframes simpleFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes seal-glow { 0%, 100% { transform: scale(1); opacity: 1; text-shadow: 0 0 20px var(--accent-color), 0 0 40px var(--accent-color-dark); } 50% { transform: scale(1.05); opacity: 0.8; text-shadow: 0 0 30px var(--accent-color), 0 0 50px var(--accent-color-dark); } }
+
+        /* --- 主档案界面 --- */
+        #background-canvas {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            opacity: 1;
+        }
+        #archive-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            transition: opacity var(--transition-speed-fast) ease-out;
+        }
+        .decorative-trim { width: 100%; max-width: 800px; opacity: 0.2; margin-block: -2rem; }
+        nav { display: flex; gap: 5vw; padding: 2rem; z-index: 10; }
+        .nav-item {
+            font-size: clamp(2rem, 5vw, 4rem);
+            color: var(--primary-text-color);
+            text-decoration: none;
+            position: relative;
+            transition: color 0.3s, text-shadow 0.3s;
+            padding: 1rem;
+        }
+        .nav-item::after {
+            content: ''; position: absolute; bottom: 10px; left: 50%;
+            transform: translateX(-50%); width: 0%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+            transition: width var(--transition-speed-fast) cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .nav-item:hover { color: white; text-shadow: 0 0 15px var(--accent-color); }
+        .nav-item:hover::after { width: 120%; }
+
+        /* --- 查看器 (内容显示) --- */
+        #viewer-container {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 100;
+            display: flex; justify-content: center; align-items: center;
+            pointer-events: none;
+            background: transparent;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            clip-path: circle(0% at 50% 50%);
+            transition: clip-path var(--transition-speed-med) cubic-bezier(0.7, 0, 0.3, 1), backdrop-filter 0.5s ease;
+            will-change: clip-path, backdrop-filter;
+        }
+        #viewer-container.active {
+            clip-path: circle(150% at 50% 50%);
+            pointer-events: auto;
+        }
+        #viewer-scroll-wrapper {
+            width: 100%; height: 100%;
+            overflow-y: auto; overflow-x: hidden;
+            padding: 5vh 5vw;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-color-dark) transparent;
+        }
+        #viewer-scroll-wrapper::-webkit-scrollbar { width: 6px; }
+        #viewer-scroll-wrapper::-webkit-scrollbar-track { background: transparent; }
+        #viewer-scroll-wrapper::-webkit-scrollbar-thumb { background-color: var(--accent-color-dark); border-radius: 3px; border: 1px solid var(--border-color); }
+        #viewer-content { max-width: 1200px; margin: 0 auto; text-align: left; }
+        #close-viewer {
+            position: fixed; top: 40px; right: 40px; font-size: 2.5rem;
+            color: var(--primary-text-color); background: none; border: none;
+            z-index: 101; opacity: 0;
+            transition: opacity var(--transition-speed-fast), transform var(--transition-speed-fast);
+            transform: scale(0.8); cursor: pointer;
+        }
+        #close-viewer:hover { color: var(--accent-color); text-shadow: 0 0 10px var(--accent-color); transform: scale(1) rotate(90deg); }
+        #viewer-container.active #close-viewer { opacity: 1; transform: scale(1); }
+        
+        .reveal-up {
+            opacity: 0;
+            transform: translateY(30px) scale(0.98);
+            filter: blur(5px);
+            transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1),
+                        transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1),
+                        filter 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+            will-change: transform, opacity, filter;
+        }
+        .reveal-up.is-visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0);
+        }
+
+        /* --- 查看器内容样式 --- */
+        .viewer-title { font-size: clamp(3rem, 6vw, 5rem); color: var(--accent-color); margin-bottom: 3rem; display: flex; align-items: center; gap: 2rem; text-shadow: 0 0 15px var(--accent-color-dark); }
+        .viewer-title::before { content: attr(data-symbol); font-size: clamp(4rem, 8vw, 6rem); color: var(--primary-text-color); border: 2px solid var(--border-color); padding: 0.5rem 1.5rem; border-radius: 8px; background: linear-gradient(145deg, rgba(215, 35, 35, 0.05), rgba(215, 35, 35, 0)); }
+        .content-section { margin-bottom: 4rem; border-left: 2px solid var(--border-color); padding-left: 2rem; transition: border-color var(--transition-speed-fast); }
+        .content-section:hover { border-left-color: var(--accent-color); }
+        .section-title { font-size: 2rem; color: var(--primary-text-color); margin-bottom: 1.5rem; }
+        .section-text { font-size: 1.1rem; line-height: 2; white-space: pre-line; max-width: 800px; }
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+        .grid-card { background: rgba(10, 2, 2, 0.4); border: 1px solid var(--border-color); border-radius: 8px; padding: 2rem; transition: transform var(--transition-speed-fast), box-shadow var(--transition-speed-fast), border-color var(--transition-speed-fast); }
+        .grid-card:not(.coming-soon):hover { 
+            transform: translateY(-8px); 
+            border-color: var(--accent-color); 
+            box-shadow: 0 10px 30px rgba(215, 35, 35, 0.2); 
+            will-change: transform, border-color, box-shadow;
+        }
+        .grid-card.coming-soon { background: transparent; border-style: dashed; display: flex; align-items: center; justify-content: center; text-align: center; cursor: not-allowed; color: rgba(230, 217, 201, 0.4); }
+        .grid-card.coming-soon .card-title { color: currentColor; margin-bottom: 0; }
+        .grid-card.coming-soon .card-text { display: none; }
+        .card-title { font-size: 1.5rem; color: var(--accent-color); margin-bottom: 1rem; }
+        .card-text { font-size: 1rem; line-height: 1.8; }
+
+        /* --- 游戏界面样式 --- */
+        #game-page {
+            justify-content: center;
+        }
+        #game-container {
+            width: 90%;
+            max-width: 900px;
+            height: 70%;
+            max-height: 600px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        #game-intro {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            padding: 2rem;
+            z-index: 2;
+            opacity: 1;
+            transition: opacity 0.5s ease-out, backdrop-filter 0.5s ease-out;
+            --b-width: 2px;
+            --b-color: var(--accent-color);
+            --b-glow: 0 0 8px var(--accent-color-dark);
+        }
+        #game-intro::before, #game-intro::after {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-color: var(--b-color);
+            border-style: solid;
+            transition: all 0.5s;
+        }
+        #game-intro::before { top: 20px; left: 20px; border-width: var(--b-width) 0 0 var(--b-width); }
+        #game-intro::after { top: 20px; right: 20px; border-width: var(--b-width) var(--b-width) 0 0; }
+        #game-intro .intro-content::before, #game-intro .intro-content::after {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-color: var(--b-color);
+            border-style: solid;
+        }
+        #game-intro .intro-content::before { bottom: 20px; left: 20px; border-width: 0 0 var(--b-width) var(--b-width); }
+        #game-intro .intro-content::after { bottom: 20px; right: 20px; border-width: 0 var(--b-width) var(--b-width) 0; }
+        #game-container.game-active #game-intro {
+            opacity: 0;
+            pointer-events: none;
+            backdrop-filter: blur(0px);
+        }
+        .intro-header {
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            color: var(--primary-text-color);
+            letter-spacing: 0.2em;
+            text-shadow: 0 0 15px var(--accent-color);
+            margin-bottom: 1.5rem;
+            animation: text-glow 3s infinite ease-in-out;
+        }
+        .intro-text {
+            font-size: clamp(1rem, 2.5vw, 1.1rem);
+            line-height: 1.8;
+            color: rgba(230, 217, 201, 0.8);
+            margin-bottom: 2.5rem;
+        }
+        .intro-text::after {
+            content: ' ■';
+            animation: blink 1s infinite;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+        
+        #start-game-btn {
+            font-family: var(--font-jp-serif);
+            font-size: clamp(1.2rem, 3vw, 1.5rem);
+            padding: 0.8rem 1.8rem;
+            border-radius: 4px;
+            border: 2px solid var(--accent-color);
+            background: transparent;
+            color: var(--accent-color);
+            text-shadow: 0 0 10px var(--accent-color-dark);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        #start-game-btn:hover {
+            background: var(--accent-color);
+            color: white;
+            box-shadow: 0 0 20px var(--accent-color);
+        }
+
+        #game-ui {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            transition: opacity 0.5s ease-in;
+        }
+        #game-container.game-active #game-ui {
+            opacity: 1;
+        }
+        #story-box {
+            background: rgba(0, 0, 0, 0.75);
+            border: 1px solid var(--border-color);
+            padding: 2.5rem 2rem 2rem;
+            border-radius: 8px;
+            overflow-y: auto;
+            color: var(--primary-text-color);
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            line-height: 1.8;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-color-dark) transparent;
+            position: relative;
+            flex: 1; /* Key for layout */
+            min-height: 0; /* Prevents flexbox overflow */
+        }
+        #story-box::-webkit-scrollbar { width: 6px; }
+        #story-box::-webkit-scrollbar-track { background: transparent; }
+        #story-box::-webkit-scrollbar-thumb { background-color: var(--accent-color-dark); }
+        #story-text { white-space: pre-wrap; }
+
+        #character-name-box {
+            position: absolute;
+            top: 0;
+            left: 2rem;
+            background: var(--accent-color);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 5px;
+            font-size: 1.3rem;
+            text-shadow: 1px 1px 2px black;
+            transform: translateY(-50%);
+            z-index: 3;
+        }
+        #options-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            padding-top: 1.5rem;
+            flex-shrink: 0; /* Key for layout */
+            min-height: 150px; /* Reserve space */
+            align-content: start;
+        }
+        .option-btn {
+            background: rgba(10, 2, 2, 0.6);
+            border: 1px solid var(--border-color);
+            color: var(--primary-text-color);
+            padding: 1rem;
+            font-family: var(--font-jp-serif);
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            text-align: left;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s, border-color 0.3s, transform 0.3s;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        .option-btn.visible {
+            animation: option-fade-in 0.5s ease-out forwards;
+        }
+        .option-btn.fade-out {
+            animation: option-fade-out 0.3s ease-in forwards;
+        }
+        @keyframes option-fade-in {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes option-fade-out {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+
+        .option-btn:hover {
+            background: rgba(215, 35, 35, 0.2);
+            border-color: var(--accent-color);
+            transform: scale(1.02);
+        }
+        .option-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        #loading-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            color: rgba(230, 217, 201, 0.7);
+            width: 100%;
+            height: 100%;
+        }
+        .loading-svg {
+            width: 30px;
+            height: 30px;
+            animation: rotate-ring 1.5s linear infinite;
+        }
+        .loading-svg circle {
+            fill: none;
+            stroke: var(--accent-color);
+            stroke-width: 2;
+            stroke-dasharray: 100;
+            stroke-dashoffset: 100;
+            animation: svg-load 1.5s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+            transform-origin: center;
+        }
+        @keyframes svg-load {
+            0%, 100% { stroke-dashoffset: 100; transform: rotate(-90deg); }
+            50% { stroke-dashoffset: 0; transform: rotate(180deg); }
+        }
+
+        /* --- 新增: 扩展页样式 --- */
+        #expansion-page {
+            padding: 0;
+            background: var(--main-bg-color);
+        }
+        #expansion-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+        .expansion-panel {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+            transition: flex 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+            cursor: pointer;
+        }
+        #expansion-container:hover .expansion-panel:not(:hover) {
+            flex-grow: 1;
+        }
+        .expansion-panel:hover {
+            flex-grow: 4;
+        }
+        
+        #panel-story { background-image: url('https://images.alphacoders.com/133/1333338.jpeg'); }
+        #panel-support { background-image: url('https://i.pinimg.com/originals/a1/38/3b/a1383b751347313a5214476a6176a378.jpg'); }
+        #panel-custom { background-image: url('https://images.hdqwalls.com/download/genshin-impact-mona-standing-in-front-of-astrolabe-5k-wz-1080x1920.jpg'); }
+
+        .panel-content {
+            position: absolute;
+            bottom: 5vh;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            text-align: center;
+            width: 80%;
+            opacity: 1;
+        }
+        .panel-content h2 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.6), 0 0 10px rgba(255, 255, 255, 0.7), 0 0 20px rgba(255, 255, 255, 0.5);
+            margin-bottom: 0.5rem;
+            transition: font-size 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .panel-content p {
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.6), 0 0 8px rgba(255, 255, 255, 0.8);
+            opacity: 0.9;
+            transition: font-size 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .expansion-panel:not(:hover) .panel-content h2 {
+            font-size: clamp(1.2rem, 2vw, 1.5rem);
+        }
+        .expansion-panel:not(:hover) .panel-content p {
+            font-size: clamp(0.7rem, 1vw, 0.8rem);
+        }
+
+        /* --- 移动端适配 --- */
+        @media (max-width: 768px) {
+            nav { flex-direction: column; gap: 1rem; align-items: center; }
+            .nav-item { font-size: 10vw; }
+            .nav-item:hover { text-shadow: none; }
+            #close-viewer { top: 20px; right: 20px; font-size: 2rem; }
+            .viewer-title { flex-direction: column; gap: 1rem; text-align: center; }
+            .viewer-title::before { margin-bottom: 1rem; }
+            #viewer-scroll-wrapper { padding: 10vh 5vw; }
+            .decorative-trim { display: none; }
+            #game-container { height: 80%; }
+            #options-container { min-height: 180px; }
+            #expansion-container { flex-direction: column; } /* 移动端改为垂直布局 */
+        }
+    </style>
+</head>
+<body>
+    <!-- 加载动画 -->
+    <div id="loader">
+        <div class="loader-rings">
+            <div class="ring"><svg viewBox="0 0 100 100" class="ring-svg"><circle class="ring-base" cx="50" cy="50" r="49"/><circle class="ring-deco" cx="50" cy="1" r="1.5"/><circle class="ring-deco" cx="99" cy="50" r="1.5"/><circle class="ring-deco" cx="50" cy="99" r="1.5"/><circle class="ring-deco" cx="1" cy="50" r="1.5"/></svg></div>
+            <div class="ring"><svg viewBox="0 0 100 100" class="ring-svg"><circle class="ring-base" stroke-dasharray="4 4" cx="50" cy="50" r="49"/><path class="ring-deco" d="M50 0 L51.5 3 L50 6 L48.5 3 Z"/><path class="ring-deco" d="M100 50 L97 51.5 L94 50 L97 48.5 Z"/><path class="ring-deco" d="M50 100 L51.5 97 L50 94 L48.5 97 Z"/><path class="ring-deco" d="M0 50 L3 51.5 L6 50 L3 48.5 Z"/></svg></div>
+            <div class="ring"><svg viewBox="0 0 100 100" class="ring-svg"><circle class="ring-base" cx="50" cy="50" r="49"/><path class="ring-deco" d="M50,1 L52,4 L48,4 Z" /><path class="ring-deco" d="M99,50 L96,48 L96,52 Z" /><path class="ring-deco" d="M50,99 L48,96 L52,96 Z" /><path class="ring-deco" d="M1,50 L4,52 L4,48 Z" /></svg></div>
+        </div>
+        <div id="loader-symbol">零</div>
+        <div id="loader-text">连接服务器...</div>
+    </div>
+
+    <!-- 背景粒子效果 -->
+    <canvas id="background-canvas"></canvas>
+
+    <!-- 滚动容器 -->
+    <div id="scroll-container">
+        <!-- 第1页: 主页 -->
+        <section id="home-page" class="scroll-page">
+            <div class="home-content fade-in-on-load">
+                <h1>巡 狩</h1>
+                <p>行走于暗夜的守护者</p>
+            </div>
+        </section>
+
+        <!-- 第2页: 档案页 -->
+        <section id="archive-page" class="scroll-page">
+            <main id="archive-container">
+                <svg class="decorative-trim" viewBox="0 0 1000 50" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><path d="M0,50 Q250,0 500,25 T1000,0 L1000,50 Z" fill="rgba(230, 217, 201, 0.05)"></path></svg>
+                <nav>
+                    <a href="#" class="nav-item" data-section="intro">序</a>
+                    <a href="#" class="nav-item" data-section="hunters">狩</a>
+                    <a href="#" class="nav-item" data-section="enemies">魔</a>
+                    <a href="#" class="nav-item" data-section="organizations">印</a>
+                </nav>
+                <svg class="decorative-trim" viewBox="0 0 1000 50" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="transform: scaleY(-1);"><path d="M0,50 Q250,0 500,25 T1000,0 L1000,50 Z" fill="rgba(230, 217, 201, 0.05)"></path></svg>
+            </main>
+        </section>
+        
+        <!-- 第3页, Galgame 界面 -->
+        <section id="game-page" class="scroll-page">
+            <div id="game-container">
+                <div id="game-intro">
+                    <div class="intro-content">
+                        <h2 class="intro-header">首次任务简报</h2>
+                        <p class="intro-text">
+                            身份已验证... 新人巡狩。<br>一份来自“天御柱会”总部的加密任务正在等待你的接收。
+                        </p>
+                        <button id="start-game-btn">接入安全线路</button>
+                    </div>
+                </div>
+                <div id="game-ui">
+                    <div id="character-name-box">???</div>
+                    <div id="story-box">
+                        <p id="story-text"></p>
+                    </div>
+                    <div id="options-container">
+                       <!-- JS generated -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 新增: 第4页, 扩展页 -->
+        <section id="expansion-page" class="scroll-page">
+            <div id="expansion-container">
+                <div class="expansion-panel" id="panel-story">
+                    <div class="panel-content">
+                        <h2>游玩故事</h2>
+                        <p>体验主线与支线剧情</p>
+                    </div>
+                </div>
+                <div class="expansion-panel" id="panel-support">
+                     <div class="panel-content">
+                        <h2>支持作者</h2>
+                        <p>为创作者提供支持</p>
+                    </div>
+                </div>
+                <div class="expansion-panel" id="panel-custom">
+                     <div class="panel-content">
+                        <h2>定制支线</h2>
+                        <p>打造属于你的专属故事</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 通用向下箭头 -->
+        <div class="scroll-down-arrow">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m19 12-7 7-7-7"></path>
+            </svg>
+        </div>
+    </div>
+
+    <!-- 查看器弹出层 -->
+    <div id="viewer-container">
+        <button id="close-viewer">&times;</button>
+        <div id="viewer-scroll-wrapper">
+            <div id="viewer-content"><!-- 内容由JS注入 --></div>
+        </div>
+    </div>
+
+    <script>
+        const jsonData = {
+             "intro": { "title": "序章", "symbol": "序", "content": `现代日本，科技的繁荣之下，潜藏着凡人无法窥见的超自然威胁——恶魔与恶鬼。\n恶魔诱惑人心，腐化灵魂；恶鬼杀戮无度，吞噬生命。\n在这光与影的夹缝中，一个古老的职业应运而生：【巡狩】。\n他们是看见“真实”之人，是行走于暗夜的守护者。\n\n远古时期，神话中的英雄须佐之男以神剑“天羽羽斩”斩杀八岐大蛇。巨蛇的身躯被分为五段，分别封印于日本的五大要地，以名古屋为中心。五个巡狩组织世代相传，肩负着看守封印、防止大蛇复苏的沉重使命。` },
+            "hunters": { "title": "巡狩", "symbol": "狩", "sections": [ { "title": "歴史と使命", "text": "源于古代的驱魔人、巫师与武士，现代巡狩融合了传统技艺与尖端科技。他们的核心使命有二：一为守护八岐大蛇的五处封印，防止灭世灾难重演；二为在都市的阴影中，狩猎威胁人类的恶魔与恶鬼。" }, { "title": "覚醒と力", "text": "巡狩的觉醒通常伴随着“灵视”能力的开启——得以看见超自然事物的双眼。这份力量或与生俱来，或是通过古老的仪式、致命的意外，甚至是与恶魔的契约而获得。力量的源泉多种多样，也造就了巡狩们迥异的战斗风格。\n\n• **契约 (Contract):** 与恶魔或恶鬼交易，以寿命、情感为代价换取强大力量。\n• **仪式 (Ritual):** 借助古老禁忌的魔法，强化自身或召唤灵体。\n• **科技 (Technology):** 使用灵能抑制器、量子刃等尖端设备对抗恶灵。\n• **血脉 (Bloodline):** 继承自远古驱魔家族的天赋与血统。" }, { "title": "社会と戦場", "text": "对普通人而言，巡狩只是都市传说。但在暗处，政府与企业默许甚至监管着他们的存在。巡狩组织之间既有联盟亦有敌对。部分巡狩因过度使用恶灵之力而堕落，成为半人半魔的“堕狩”，对双方都是巨大的威胁。他们的战场，是繁华的都市，也是封印所在的“灵灾区”——生者禁入之地。" } ] },
+            "enemies": { "title": "脅威", "symbol": "魔", "cards": [ { "title": "恶魔 - Demons", "text": "狡诈、伪善的存在。它们常伪装成人类社会的精英、网红甚至你的亲友，通过诱惑与谎言操控人心，以腐化的灵魂为食粮。消灭它们需要首先识破其伪装。" }, { "title": "恶鬼 - Ghouls", "text": "野蛮、暴戾的掠食者。形态从人形到巨兽千变万化，纯粹为了吞噬生命力而存在。它们出没于夜晚的废弃区域，需用附魔武器或封印仪式才能彻底消灭。" }, { "title": "八岐大蛇 - Yamato no Orochi", "text": "传说中的灭世巨兽，被分为五段封印于日本各地。哪怕只是其中一处封印破裂，其泄露的力量也足以引发毁灭性的灾难。阻止其复苏，是所有巡狩组织的最高要务。" } ] },
+            "organizations": { "title": "五大封印守护组织", "symbol": "印", "cards": [ { "title": "天御柱会 (中部)", "text": "位于名古屋的中心枢纽，负责协调五地巡狩，平衡各方势力。能力来源混合，强调团队协作。" }, { "title": "霜鬼众 (北方)", "text": "盘踞在北海道及东北地区的契约使用者。环境恶劣，恶鬼横行，他们依靠与恶灵的危险契（qì）约换取生存与战斗的力量。" }, { "title": "灵务厅 (东方)", "text": "以东京为中心的政府直属高科技机构。成员类似特工，配备最尖端的灵能科技武器对抗伪装成人类的恶魔。" }, { "title": "祇园氏 (南方)", "text": "以京都为中心的古老驱魔血脉家族。组织贵族化，依靠世代传承的血统天赋战斗，作风传统而优雅。" }, { "title": "出云祀 (西方)", "text": "位于云国的仪式主义者。他们是神话与民俗的继承人，依赖古老的仪式，借助神明或地方神灵的力量祓除邪魔。" }, { "title": "Coming Soon", "text": "", "status": "coming-soon" } ] }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const loader = document.getElementById('loader');
+            const loaderSymbol = document.getElementById('loader-symbol');
+            const loaderText = document.getElementById('loader-text');
+            let loaderHidden = false;
+            
+            // --- 加载进度模拟 ---
+            const loadingMessages = [
+                "连接至天御柱会服务器...", "同步“霜鬼众”契约数据...", "验证“灵务厅”特工身份...", "检索“祇园氏”血脉记录...",
+                "解析“出云祀”古代仪式...", "扫描灵灾区能量波动...", "加载恶鬼图鉴...", "档案同步完成，准许访问。"
+            ];
+            function toChineseNumeral(num) {
+                const numerals = ['零', '壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖'];
+                const n = Math.floor(num);
+                if (n === 100) return '壹佰';
+                let result = '';
+                const s = n.toString();
+                for (let i = 0; i < s.length; i++) { result += numerals[parseInt(s[i])]; }
+                return result || '零';
+            }
+            let messageIndex = 0;
+            let finalMessageSet = false;
+            const totalLoadTime = 4000;
+            const updateInterval = 50;
+            let progress = 0;
+            const progressIncrement = 100 / (totalLoadTime / updateInterval);
+            loaderText.textContent = loadingMessages[0];
+            const loadingInterval = setInterval(() => {
+                progress += progressIncrement;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(loadingInterval);
+                }
+                loaderSymbol.textContent = toChineseNumeral(progress);
+                if (progress >= 90 && !finalMessageSet) {
+                    loaderText.textContent = "准备就绪...";
+                    finalMessageSet = true;
+                } else if (!finalMessageSet) {
+                    const nextMessageIndex = Math.floor(progress / (100 / loadingMessages.length));
+                    if (nextMessageIndex > messageIndex && loadingMessages[nextMessageIndex]) {
+                        messageIndex = nextMessageIndex;
+                        loaderText.textContent = loadingMessages[messageIndex];
+                    }
+                }
+            }, updateInterval);
+            function hideLoader() {
+                if (loaderHidden) return;
+                loaderHidden = true;
+                loader.classList.add('loader-hidden');
+                setTimeout(() => { loader.style.display = 'none'; }, 1000);
+            }
+            window.addEventListener('load', () => { setTimeout(hideLoader, totalLoadTime); });
+            
+            // --- 背景Canvas ---
+            const canvas = document.getElementById('background-canvas');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resizeCanvas();
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = canvas.height + Math.random() * 100;
+                    this.size = Math.random() * 3 + 1;
+                    this.speedY = -(Math.random() * 2.5 + 1);
+                    this.speedX = (Math.random() - 0.5) * 0.7;
+                    this.opacity = Math.random() * 0.8 + 0.2;
+                    this.color = `rgba(215, 35, 35, ${this.opacity})`;
+                }
+                update() {
+                    this.y += this.speedY; this.x += this.speedX;
+                    if (this.y < -10) {
+                       this.y = canvas.height + Math.random() * 20;
+                       this.x = Math.random() * canvas.width;
+                    }
+                }
+                draw() {
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = this.color;
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.ellipse(this.x, this.y, this.size * 0.7, this.size, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            function createParticles() {
+                const particleCount = Math.min(150, window.innerWidth / 25); 
+                particles = [];
+                for(let i=0; i< particleCount; i++) { particles.push(new Particle()); }
+            }
+            function animateCanvas() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for(const p of particles) { p.update(); p.draw(); }
+                requestAnimationFrame(animateCanvas);
+            }
+            createParticles();
+            animateCanvas();
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => { clearTimeout(timeout); func(...args); };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+            const debouncedResize = debounce(() => { resizeCanvas(); createParticles(); }, 250);
+            window.addEventListener('resize', debouncedResize);
+
+            // --- 滚动与查看器逻辑 ---
+            const viewerContainer = document.getElementById('viewer-container');
+            const viewerContent = document.getElementById('viewer-content');
+            const closeViewerBtn = document.getElementById('close-viewer');
+            const scrollContainer = document.getElementById('scroll-container');
+            const scrollArrow = document.querySelector('.scroll-down-arrow');
+            scrollContainer.addEventListener('scroll', () => {
+                const pageHeight = window.innerHeight;
+                // 更新: 在第四页(索引为3)开始隐藏箭头
+                if (scrollContainer.scrollTop > pageHeight * 2.5) {
+                    scrollArrow.classList.add('hidden');
+                } else {
+                    scrollArrow.classList.remove('hidden');
+                }
+            });
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const sectionKey = e.target.dataset.section;
+                    const data = jsonData[sectionKey];
+                    if (!data) return;
+                    let contentHTML = `<h1 class="viewer-title reveal-up" data-symbol="${data.symbol}">${data.title}</h1>`;
+                    if (data.content) { contentHTML += `<div class="content-section reveal-up"><p class="section-text">${data.content}</p></div>`; }
+                    if (data.sections) { data.sections.forEach(sec => { contentHTML += `<div class="content-section reveal-up"><h2 class="section-title">${sec.title}</h2><p class="section-text">${sec.text}</p></div>`; }); }
+                    if (data.cards) {
+                        contentHTML += `<div class="grid-container">`;
+                        data.cards.forEach(card => {
+                            const extraClass = card.status === 'coming-soon' ? ' coming-soon' : '';
+                            contentHTML += `<div class="grid-card reveal-up${extraClass}"><h3 class="card-title">${card.title}</h3><p class="card-text">${card.text}</p></div>`;
+                        });
+                        contentHTML += `</div>`;
+                    }
+                    viewerContent.innerHTML = contentHTML;
+                    scrollContainer.style.overflowY = 'hidden';
+                    viewerContainer.classList.add('active');
+                    const elementsToAnimate = viewerContent.querySelectorAll('.reveal-up');
+                    elementsToAnimate.forEach((el, index) => {
+                        el.style.transitionDelay = `${index * 100}ms`;
+                        setTimeout(() => el.classList.add('is-visible'), 20); 
+                    });
+                });
+            });
+            closeViewerBtn.addEventListener('click', () => {
+                viewerContainer.classList.remove('active');
+                scrollContainer.style.overflowY = 'scroll';
+                setTimeout(() => { viewerContent.innerHTML = ''; }, 800);
+            });
+
+            // --- 游戏逻辑 ---
+            const gameContainer = document.getElementById('game-container');
+            const startGameBtn = document.getElementById('start-game-btn');
+            const storyTextElement = document.getElementById('story-text');
+            const optionsContainer = document.getElementById('options-container');
+            const characterNameBox = document.getElementById('character-name-box');
+
+            let storyHistory = [];
+            const apiKey = ""; 
+
+            const responseSchema = {
+                type: "OBJECT",
+                properties: {
+                    "character": { "type": "STRING", "description": "说话角色的名字。旁白请用 '旁白'。" },
+                    "story": { "type": "STRING", "description": "故事的下一部分。应引人入胜、细节丰富。" },
+                    "options": {
+                        "type": "ARRAY",
+                        "description": "提供给玩家的三个清晰、有意义的选项。",
+                        "items": { "type": "STRING" }
+                    }
+                },
+                required: ["character", "story", "options"]
+            };
+
+            const systemPrompt = `你是一个互动式文字冒险游戏的地下城主（DM）。
+            世界观：现代日本，一个名为“巡狩”的古老组织在暗中保护世界免受恶魔和恶鬼的侵害。玩家是一名刚刚觉醒“灵视”能力，被“天御柱会”招募的新人巡狩。你的任务是引导玩家完成他的第一个任务。
+            规则：
+            1. 始终以JSON格式回应，并严格遵守提供的schema。
+            2. 剧情要悬疑、紧张，充满神秘感和超自然元素。
+            3. "options"字段必须提供三个选项，且严格遵循三种行为模式：1. 激进（直接行动，有风险但可能收益高）。2. 试探（收集信息，询问细节）。3. 保守（谨慎行事，避免冲突）。请直接返回选项文本，不要在文本前标注行为类型。
+            4. "character"字段应标明说话者的名字，如果是场景描述，则使用“旁白”。
+            5. 不要轻易结束游戏，保持故事的连续性。
+            现在，开始游戏的第一幕：新人巡狩第一次来到天御柱会的秘密据点，接到了他的第一个任务简报。`;
+            
+            const loadingIndicatorHTML = `
+                <div id="loading-indicator">
+                    <svg class="loading-svg" viewBox="0 0 40 40">
+                        <circle cx="20" cy="20" r="18"></circle>
+                    </svg>
+                    <span>正在通讯...</span>
+                </div>`;
+
+            async function generateStory(currentHistory) {
+                optionsContainer.innerHTML = loadingIndicatorHTML;
+
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                const payload = {
+                    contents: currentHistory,
+                    generationConfig: { responseMimeType: "application/json", responseSchema: responseSchema, temperature: 0.9 },
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                };
+
+                try {
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) throw new Error(`API call failed: ${response.status}`);
+                    const result = await response.json();
+                    const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (!jsonText) throw new Error("Invalid response from API.");
+                    return JSON.parse(jsonText);
+                } catch (error) {
+                    console.error("Error generating story:", error);
+                    storyTextElement.textContent = "通讯中断... 无法连接至天御柱会网络。请刷新页面重试。";
+                    optionsContainer.innerHTML = '';
+                    return null;
+                }
+            }
+
+            function typewriter(element, text, callback) {
+                element.textContent = '';
+                let i = 0;
+                function type() {
+                    if (i < text.length) {
+                        element.textContent += text.charAt(i);
+                        i++;
+                        element.parentElement.scrollTop = element.parentElement.scrollHeight;
+                        setTimeout(type, 30);
+                    } else if (callback) {
+                        callback();
+                    }
+                }
+                type();
+            }
+
+            function updateGameUI(data) {
+                if (!data) return;
+                characterNameBox.textContent = data.character || '???';
+                optionsContainer.innerHTML = '';
+
+                typewriter(storyTextElement, data.story, () => {
+                    if (data.options && data.options.length > 0) {
+                        data.options.forEach((optionText, index) => {
+                            const button = document.createElement('button');
+                            button.className = 'option-btn';
+                            button.textContent = optionText;
+                            button.style.animationDelay = `${index * 100}ms`;
+                            button.onclick = () => handleOptionSelect(optionText);
+                            optionsContainer.appendChild(button);
+                            // Trigger animation
+                            setTimeout(() => button.classList.add('visible'), 20);
+                        });
+                    }
+                });
+            }
+
+            async function handleOptionSelect(choice) {
+                storyHistory.push({ role: "user", parts: [{ text: `我选择： "${choice}"` }] });
+                
+                const choiceElement = document.createElement('p');
+                choiceElement.innerHTML = `&gt; ${choice}`;
+                choiceElement.style.color = 'var(--accent-color)';
+                choiceElement.style.textAlign = 'right';
+                choiceElement.style.opacity = '0.8';
+                storyTextElement.appendChild(document.createElement('br'));
+                storyTextElement.appendChild(document.createElement('br'));
+                storyTextElement.appendChild(choiceElement);
+                storyTextElement.parentElement.scrollTop = storyTextElement.parentElement.scrollHeight;
+
+                const buttons = optionsContainer.querySelectorAll('.option-btn');
+                buttons.forEach(btn => {
+                    btn.classList.add('fade-out');
+                    btn.disabled = true;
+                });
+
+                setTimeout(async () => {
+                    const modelResponse = await generateStory(storyHistory);
+                    if (modelResponse) {
+                        storyHistory.push({ role: "model", parts: [{ text: JSON.stringify(modelResponse) }] });
+                        updateGameUI(modelResponse);
+                    }
+                }, 300); // Wait for fade out animation
+            }
+
+            async function startGame() {
+                gameContainer.classList.add('game-active');
+
+                setTimeout(async () => {
+                    storyHistory = [{ role: "user", parts: [{ text: "开始游戏" }] }];
+                    const firstScene = await generateStory(storyHistory);
+                    if (firstScene) {
+                        storyHistory.push({ role: "model", parts: [{ text: JSON.stringify(firstScene) }] });
+                        updateGameUI(firstScene);
+                    }
+                }, 500); // Wait for intro to fade out
+            }
+            startGameBtn.addEventListener('click', startGame);
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
