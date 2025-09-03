@@ -914,31 +914,45 @@
                     </svg>
                     <span>正在通讯...</span>
                 </div>`;
-
             async function generateStory(currentHistory) {
                 optionsContainer.innerHTML = loadingIndicatorHTML;
 
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                // 这里的 URL 从 Google API 地址变成了我们自己的后端地址
+                const apiUrl = '/api/generate'; 
+
+                // 我们将 prompt 和 schema 也一起发送给后端
                 const payload = {
-                    contents: currentHistory,
-                    generationConfig: { responseMimeType: "application/json", responseSchema: responseSchema, temperature: 0.9 },
-                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                    currentHistory,
+                    systemPrompt,
+                    responseSchema
                 };
 
                 try {
-                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    if (!response.ok) throw new Error(`API call failed: ${response.status}`);
-                    const result = await response.json();
+                    // 注意这里的 fetch 调用变了
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        // 如果后端出错，在这里显示错误
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `API call failed: ${response.status}`);
+                    }
+
+                    const result = await response.json(); // 直接获取后端转发来的JSON
                     const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
                     if (!jsonText) throw new Error("Invalid response from API.");
                     return JSON.parse(jsonText);
+
                 } catch (error) {
                     console.error("Error generating story:", error);
-                    storyTextElement.textContent = "通讯中断... 无法连接至天御柱会网络。请刷新页面重试。";
+                    storyTextElement.textContent = `通讯中断... ${error.message}. 请刷新页面重试。`;
                     optionsContainer.innerHTML = '';
                     return null;
                 }
-            }
+}
 
             function typewriter(element, text, callback) {
                 element.textContent = '';
