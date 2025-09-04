@@ -31,7 +31,7 @@
             background-color: var(--main-bg-color);
             color: var(--primary-text-color);
             font-family: var(--font-jp-serif);
-            background-image: url('https://i.pinimg.com/originals/3b/38/b3/3b38/b3424172731b816a1b183416972e.gif');
+            background-image: url('https://i.pinimg.com/originals/3b/38/b3/3b38b3424172731b816a1b183416972e.gif');
             background-size: cover;
             background-position: center center;
         }
@@ -873,8 +873,18 @@
             <h3 id="modal-char-name"></h3>
             <p id="modal-save-date"></p>
             <div class="modal-buttons">
-                <button class="menu-btn" id="continue-save-btn">使用此存档继续</button>
-                <button class="menu-btn" id="delete-save-btn">删除该存档</button>
+                <button class="menu-btn" id="continue-save-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10,18a1,1,0,0,0,1-1V7a1,1,0,0,0-2,0v10A1,1,0,0,0,10,18ZM14,6V17a1,1,0,0,0,2,0V7a1,1,0,0,0-2,0Z"/></svg>
+                    <span>使用此存档继续</span>
+                </button>
+                <button class="menu-btn" id="export-save-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18,15a1,1,0,0,0-1,1v2a1,1,0,0,1-1,1H8a1,1,0,0,1-1-1V16a1,1,0,0,0-2,0v2a3,3,0,0,0,3,3h8a3,3,0,0,0,3-3V16A1,1,0,0,0,18,15ZM11.29,12.71a1,1,0,0,0,1.42,0l4-4a1,1,0,0,0-1.42-1.42L13,9.59V3A1,1,0,0,0,11,3v6.59l-2.29-2.3a1,1,0,0,0-1.42,1.42Z"/></svg>
+                    <span>导出对话记录</span>
+                </button>
+                <button class="menu-btn" id="delete-save-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,6H16V5a3,3,0,0,0-3-3H11A3,3,0,0,0,8,5V6H4A1,1,0,0,0,4,8H5V19a3,3,0,0,0,3,3h8a3,3,0,0,0,3-3V8h1a1,1,0,0,0,0-2ZM10,5a1,1,0,0,1,1-1h2a1,1,0,0,1,1,1V6H10Zm7,14a1,1,0,0,1-1,1H8a1,1,0,0,1-1-1V8H17Z"/></svg>
+                    <span>删除该存档</span>
+                </button>
             </div>
         </div>
     </div>
@@ -1064,6 +1074,7 @@
             const saveActionModal = document.getElementById('save-action-modal');
             const modalCloseBtn = saveActionModal.querySelector('.modal-close-btn');
             const continueSaveBtn = document.getElementById('continue-save-btn');
+            const exportSaveBtn = document.getElementById('export-save-btn');
             const deleteSaveBtn = document.getElementById('delete-save-btn');
             
             const storyTextElement = document.getElementById('story-text');
@@ -1143,6 +1154,21 @@
                 localStorage.setItem(SAVE_KEY, JSON.stringify(saves));
                 loadSaveList();
                 closeSaveActionModal();
+            }
+
+            function exportSave(save) {
+                if (!save) return;
+                const dataStr = JSON.stringify(save.history, null, 2);
+                const dataBlob = new Blob([dataStr], {type: "application/json;charset=utf-8"});
+                const url = URL.createObjectURL(dataBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                const safeFileName = save.profile.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                a.download = `巡狩记录-${safeFileName}-${new Date(save.id).toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
             }
             
             function continueFromSave(save) {
@@ -1294,6 +1320,9 @@
             });
             continueSaveBtn.addEventListener('click', () => {
                 if (activeSave) continueFromSave(activeSave);
+            });
+            exportSaveBtn.addEventListener('click', () => {
+                if (activeSave) exportSave(activeSave);
             });
 
             startGameBtn.addEventListener('click', async (e) => {
