@@ -345,28 +345,6 @@
             box-shadow: 0 0 30px rgba(215, 35, 35, 0.1);
             backdrop-filter: blur(10px);
         }
-        #game-container::before, #game-container::after {
-            content: '';
-            position: absolute;
-            width: 50px;
-            height: 50px;
-            border-color: var(--accent-color);
-            border-style: solid;
-            opacity: 0.5;
-        }
-        #game-container::before { top: 10px; left: 10px; border-width: 2px 0 0 2px; }
-        #game-container::after { top: 10px; right: 10px; border-width: 2px 2px 0 0; }
-        #game-ui::before, #game-ui::after { /* Use game-ui for bottom corners */
-            content: '';
-            position: absolute;
-            width: 50px;
-            height: 50px;
-            border-color: var(--accent-color);
-            border-style: solid;
-            opacity: 0.5;
-        }
-        #game-ui::before { bottom: 10px; left: 10px; border-width: 0 0 2px 2px; }
-        #game-ui::after { bottom: 10px; right: 10px; border-width: 0 2px 2px 0; }
         
         .game-screen {
             position: absolute;
@@ -496,6 +474,7 @@
             color: white; text-shadow: 0 0 5px black;
         }
         #start-game-btn { margin-top: 1rem; font-size: 1.2rem; padding: 0.8rem; }
+        #character-creation-screen .back-btn { margin-top: 0.5rem; justify-content: center; }
 
         #save-slots-screen { justify-content: flex-start; }
         #save-slots-screen .back-btn {
@@ -554,12 +533,12 @@
             width: 100%; height: 100%; display: flex;
             flex-direction: column; opacity: 0; transition: opacity 0.5s ease-in;
             padding: 1rem;
-            pointer-events: none; /* BUG FIX: default to no pointer events */
-            position: relative; /* For pseudo elements */
+            pointer-events: none; /* BUG FIX */
+            position: relative; 
         }
         #game-container.game-active #game-ui {
             opacity: 1;
-            pointer-events: auto; /* BUG FIX: enable pointer events when active */
+            pointer-events: auto; /* BUG FIX */
         }
         #story-box {
             background: transparent; border: none;
@@ -567,6 +546,11 @@
             font-size: clamp(1rem, 2.5vw, 1.2rem); line-height: 1.8;
             position: relative; flex: 1; min-height: 0; overflow-y: auto;
         }
+        /* Custom Scrollbar */
+        #story-box::-webkit-scrollbar { width: 6px; }
+        #story-box::-webkit-scrollbar-track { background: transparent; }
+        #story-box::-webkit-scrollbar-thumb { background-color: var(--accent-color-dark); border-radius: 3px; }
+        #story-box::-webkit-scrollbar-thumb:hover { background-color: var(--accent-color); }
         
         .story-watermark {
             display: flex; align-items: center; gap: 0.5em;
@@ -577,14 +561,17 @@
         }
         .story-watermark svg { width: 1em; height: 1em; fill: currentColor; }
 
-
         #character-name-box {
-            position: absolute; top: 0; left: 1rem;
-            background: var(--accent-color); color: white;
-            padding: 0.5rem 1.5rem;
-            font-size: 1.3rem; text-shadow: 1px 1px 2px black;
+            position: absolute; top: 1rem; left: -1px;
+            background: var(--accent-color); 
+            color: white;
+            padding: 0.5rem 1.5rem 0.5rem 2rem;
+            font-size: 1.3rem; 
+            text-shadow: 0 0 5px black;
             z-index: 3;
             clip-path: polygon(0 0, 100% 0, calc(100% - 20px) 100%, 0 100%);
+            border-radius: 0 4px 4px 0;
+            box-shadow: 0 0 10px var(--accent-color-dark);
         }
         #options-container {
             display: grid; grid-template-columns: 1fr;
@@ -802,6 +789,7 @@
                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.71,6.29a1,1,0,0,0-1.42,0l-11,11a1,1,0,0,1-1.42,0l-4-4a1,1,0,0,0-1.42,1.42l4,4a3,3,0,0,0,4.24,0l11-11A1,1,0,0,0,21.71,6.29Z"/></svg>
                              <span>确认身份并开始任务</span>
                         </button>
+                        <button class="menu-btn back-btn" id="creation-back-btn">&lt; 返回</button>
                     </div>
                 </div>
 
@@ -1065,6 +1053,7 @@
             
             const characterCreationScreen = document.getElementById('character-creation-screen');
             const startGameBtn = document.getElementById('start-game-btn');
+            const creationBackBtn = document.getElementById('creation-back-btn');
             
             const saveSlotsScreen = document.getElementById('save-slots-screen');
             const saveListContainer = document.getElementById('save-list-container');
@@ -1249,32 +1238,34 @@
                 characterNameBox.textContent = data.character || '???';
                 optionsContainer.innerHTML = '';
 
-                const addWatermark = () => {
+                const addWatermarkAndOptions = () => {
                     const watermark = document.createElement('div');
                     watermark.className = 'story-watermark';
                     const notepadIconSVG = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14,2H6A2,2,0,0,0,4,4V20a2,2,0,0,0,2,2H18a2,2,0,0,0,2-2V8Zm2,16H8V16h8Zm0-4H8V12h8Zm-3-5V4.5L18.5,10H13Z"></path></svg>`;
                     watermark.innerHTML = `${notepadIconSVG}<span>PoweredByGeminiSnow</span>`;
                     storyTextElement.appendChild(watermark);
                     storyTextElement.parentElement.scrollTop = storyTextElement.parentElement.scrollHeight;
+                    
+                    if (data.options && data.options.length > 0) {
+                        setTimeout(() => {
+                             data.options.forEach((optionText, index) => {
+                                const button = document.createElement('button');
+                                button.className = 'option-btn';
+                                button.textContent = optionText;
+                                button.style.animationDelay = `${index * 100}ms`;
+                                button.onclick = () => handleOptionSelect(optionText);
+                                optionsContainer.appendChild(button);
+                                setTimeout(() => button.classList.add('visible'), 20);
+                            });
+                        }, 300); // Delay before showing options
+                    }
                 };
 
                 if (isLoad) {
                     storyTextElement.innerHTML = data.story;
-                    addWatermark();
+                    addWatermarkAndOptions();
                 } else {
-                    typewriter(storyTextElement, data.story, addWatermark);
-                }
-                
-                if (data.options && data.options.length > 0) {
-                    data.options.forEach((optionText, index) => {
-                        const button = document.createElement('button');
-                        button.className = 'option-btn';
-                        button.textContent = optionText;
-                        button.style.animationDelay = `${index * 100}ms`;
-                        button.onclick = () => handleOptionSelect(optionText);
-                        optionsContainer.appendChild(button);
-                        setTimeout(() => button.classList.add('visible'), 20);
-                    });
+                    typewriter(storyTextElement, data.story, addWatermarkAndOptions);
                 }
             }
 
@@ -1314,6 +1305,8 @@
                 showScreen(saveSlotsScreen);
             });
             backToMenuBtn.addEventListener('click', () => showScreen(startMenuScreen));
+            creationBackBtn.addEventListener('click', () => showScreen(startMenuScreen));
+            
             modalCloseBtn.addEventListener('click', closeSaveActionModal);
             deleteSaveBtn.addEventListener('click', () => {
                 if (activeSave) deleteSave(activeSave.id);
@@ -1356,5 +1349,4 @@
     </script>
 </body>
 </html>
-
 
