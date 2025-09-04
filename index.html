@@ -6,7 +6,7 @@
     <title>巡狩名录</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Shippori+Mincho:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+JP:wght@400;700&family=Shippori+Mincho:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --main-bg-color: #050202;
@@ -15,6 +15,7 @@
             --accent-color-dark: #9f1919;
             --border-color: rgba(215, 35, 35, 0.3);
             --font-jp-serif: 'Noto Serif JP', 'Shippori Mincho', serif;
+            --font-handwritten: 'Ma Shan Zheng', cursive;
             --transition-speed-fast: 0.4s;
             --transition-speed-med: 0.8s;
             --transition-speed-slow: 1.2s;
@@ -43,7 +44,7 @@
             left: 50px;
             z-index: 1000;
             width: 180px;
-            opacity: 0; /* 由 fade-in-on-load 控制 */
+            opacity: 0;
             transition: opacity 0.8s ease;
             pointer-events: none;
         }
@@ -73,47 +74,142 @@
             overflow: hidden; /* 防止页面内部内容溢出影响布局 */
         }
 
-        /* --- 主页样式 --- */
-        #home-page .home-content {
+        /* --- 主页样式 V2.1 --- */
+        #home-page {
+            padding: 2rem;
+        }
+
+        .home-layout {
+            width: 100%;
+            height: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            grid-template-columns: 1fr 2fr;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .top-info-bar {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            font-family: monospace;
+            font-size: clamp(0.8rem, 1.5vw, 1rem);
+            color: rgba(230, 217, 201, 0.6);
+            letter-spacing: 0.1em;
+            padding: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .side-lore-panel {
+            align-self: center;
+            padding-left: 1.5rem;
+            border-left: 2px solid var(--accent-color);
+            max-width: 400px;
+            overflow: hidden;
+        }
+        .side-lore-panel h3 {
+            font-size: 1.2rem;
+            letter-spacing: 0.2em;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+        }
+        .side-lore-panel p {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: rgba(230, 217, 201, 0.8);
+            position: relative;
+            min-height: 150px;
+        }
+        #lore-text-container {
+            display: inline-block;
+            transition: transform 0.6s cubic-bezier(0.7, 0, 0.3, 1), opacity 0.6s cubic-bezier(0.7, 0, 0.3, 1);
+        }
+        #lore-text-container.slide-out {
+            transform: translateX(-150%);
+            opacity: 0;
+        }
+        #lore-text-container.prepare-in {
+            transform: translateX(150%);
+            opacity: 0;
+            transition: none;
+        }
+
+
+        .main-title-container {
             text-align: center;
-            color: white;
             z-index: 1;
         }
-        #home-page h1 {
-            font-size: clamp(4rem, 15vw, 12rem);
-            font-weight: 700;
-            letter-spacing: 0.5em;
+        .main-title-container h1 {
+            font-family: var(--font-handwritten);
+            font-size: clamp(6rem, 20vw, 15rem);
+            font-weight: 400;
+            letter-spacing: 0.1em;
             text-shadow: 0 0 20px var(--accent-color), 0 0 50px var(--accent-color-dark);
-            line-height: 1.2;
+            line-height: 1;
             animation: text-glow 4s infinite ease-in-out;
-            margin-right: -0.5em;
+            margin-right: -0.1em;
         }
-        #home-page p {
+        .main-title-container p {
             font-size: clamp(1rem, 3vw, 1.5rem);
             letter-spacing: 0.2em;
             opacity: 0.8;
             margin-top: 1rem;
         }
+
+        .scroll-prompt {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: rgba(230, 217, 201, 0.7);
+            padding-bottom: 1rem;
+        }
+        .scroll-prompt::after {
+            content: '';
+            display: block;
+            width: 2px;
+            height: 40px;
+            background: linear-gradient(var(--border-color), transparent);
+            margin: 0.5rem auto 0;
+            animation: scroll-line-anim 2s infinite ease-in-out;
+        }
+
+        @keyframes scroll-line-anim {
+            0% { transform: scaleY(0); transform-origin: top; }
+            50% { transform: scaleY(1); transform-origin: top; }
+            51% { transform-origin: bottom; }
+            100% { transform: scaleY(0); transform-origin: bottom; }
+        }
+
         @keyframes text-glow {
             0%, 100% { text-shadow: 0 0 20px var(--accent-color), 0 0 50px var(--accent-color-dark); }
             50% { text-shadow: 0 0 30px var(--accent-color), 0 0 70px var(--accent-color-dark); }
         }
         
-        /* --- 通用淡入效果 --- */
         .fade-in-on-load {
             opacity: 0;
-            animation: content-enter 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) 4s forwards;
+            animation: content-enter 1s cubic-bezier(0.2, 0.8, 0.2, 1) 4s forwards;
         }
+        .fade-in-on-load > * {
+            opacity: 0;
+            animation: content-enter 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        /* Staggered animation delays */
+        .fade-in-on-load .top-info-bar { animation-delay: 4.2s; }
+        .fade-in-on-load .side-lore-panel { animation-delay: 4.4s; }
+        .fade-in-on-load .main-title-container { animation-delay: 4s; }
+        .fade-in-on-load .scroll-prompt { animation-delay: 4.6s; }
+
         @keyframes content-enter {
             from { 
                 opacity: 0; 
-                transform: translateY(20px) scale(0.98); 
-                filter: blur(3px);
+                transform: translateY(20px); 
             }
             to { 
                 opacity: 1; 
-                transform: translateY(0) scale(1);
-                filter: blur(0px);
+                transform: translateY(0);
             }
         }
         
@@ -656,27 +752,26 @@
             color: white;
             text-align: center;
             width: 80%;
-            transition: opacity 0.5s ease-out 0.3s;
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
        
         .panel-content h2 {
-            font-size: clamp(2rem, 5vw, 3.5rem);
-            text-shadow: 0 1px 3px rgba(0,0,0,0.6), 0 0 10px rgba(255, 255, 255, 0.7), 0 0 20px rgba(255, 255, 255, 0.5);
-            margin-bottom: 0.5rem;
-            transition: font-size 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+            font-size: clamp(2rem, 5vw, 4rem);
+            text-shadow: 0 0 15px var(--accent-color);
+            margin-bottom: 1rem;
+            color: var(--primary-text-color);
         }
+        
         .panel-content p {
             font-size: clamp(1rem, 2.5vw, 1.2rem);
-            text-shadow: 0 1px 3px rgba(0,0,0,0.6), 0 0 8px rgba(255, 255, 255, 0.8);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            opacity: 0;
+            transition: opacity 0.5s ease-out 0.2s;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .expansion-panel:hover .panel-content p {
             opacity: 0.9;
-            transition: font-size 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-
-        .expansion-panel:not(:hover) .panel-content h2 {
-            font-size: clamp(1.2rem, 2vw, 1.5rem);
-        }
-        .expansion-panel:not(:hover) .panel-content p {
-            font-size: clamp(0.8rem, 1.5vw, 0.9rem);
         }
         
         /* --- 移动端适配 --- */
@@ -685,6 +780,23 @@
                 left: 20px;
                 top: 20px;
                 width: 120px;
+            }
+            .home-layout {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto 1fr auto;
+                text-align: center;
+            }
+            .side-lore-panel {
+                grid-row: 2;
+                border-left: none;
+                border-top: 1px solid var(--border-color);
+                border-bottom: 1px solid var(--border-color);
+                padding: 1rem;
+                text-align: center;
+                max-width: 100%;
+            }
+            .main-title-container {
+                grid-row: 3;
             }
             nav { flex-direction: column; gap: 1rem; align-items: center; }
             .nav-item { font-size: 10vw; }
@@ -701,7 +813,7 @@
     </style>
 </head>
 <body>
-    <img src="logo.png" alt="巡狩名录 Logo" class="site-logo fade-in-on-load" onerror="this.style.display='none'">
+    <img src="logo.png" alt="巡狩名录 Logo" class="site-logo" onerror="this.style.display='none'">
     <!-- 加载动画 -->
     <div id="loader">
         <div class="loader-rings">
@@ -720,9 +832,22 @@
     <div id="scroll-container">
         <!-- 第1页: 主页 -->
         <section id="home-page" class="scroll-page">
-            <div class="home-content fade-in-on-load">
-                <h1>巡 狩</h1>
-                <p>行走于暗夜的守护者</p>
+            <div class="home-layout fade-in-on-load">
+                <div class="top-info-bar">
+                    <span>JST 23:47 // SHIBUYA-KU, TOKYO</span>
+                    <span>STATUS: ACTIVE</span>
+                </div>
+                <div class="side-lore-panel">
+                    <h3>[CLASSIFIED]</h3>
+                    <p><span id="lore-text-container">于此记录，于此见证。于光明不存之处，以影为刃，斩断灾厄。此为行走于凡人与恶鬼夹缝者之名录——谓之“巡狩”。</span></p>
+                </div>
+                <div class="main-title-container">
+                    <h1>巡 狩</h1>
+                    <p>行走于暗夜的守护者</p>
+                </div>
+                <div class="scroll-prompt">
+                    <span>向下滚动以查阅名录</span>
+                </div>
             </div>
         </section>
 
@@ -1345,6 +1470,35 @@
                     updateGameUI(firstScene);
                 }
             });
+
+             // --- 主页世界观摘要动画 ---
+            const loreTexts = [
+                "于此记录，于此见证。于光明不存之处，以影为刃，斩断灾厄。此为行走于凡人与恶鬼夹缝者之名录——谓之“巡狩”。",
+                "恶鬼并非传说，它们潜藏于都市的霓虹与阴影之中，以人心的脆弱为食粮。而我们，是唯一的防线。",
+                "五大封印地镇守着远古的灾厄。每一次心跳，都可能是大蛇苏醒的前兆。绝不可掉以轻心。",
+                "“灵视”是祝福，亦是诅咒。看见“真实”的代价，远比想象中沉重。欢迎来到世界的另一面。",
+                "记住，新人。你的敌人不只有恶鬼，还有那些与恶鬼交易，出卖灵魂的堕落者。不要相信任何人。"
+            ];
+            let currentLoreIndex = 0;
+            const loreTextContainer = document.getElementById('lore-text-container');
+
+            if (loreTextContainer) {
+                setInterval(() => {
+                    loreTextContainer.classList.add('slide-out');
+                    
+                    setTimeout(() => {
+                        loreTextContainer.classList.add('prepare-in');
+                        currentLoreIndex = (currentLoreIndex + 1) % loreTexts.length;
+                        loreTextContainer.textContent = loreTexts[currentLoreIndex];
+                        
+                        setTimeout(() => {
+                            loreTextContainer.classList.remove('slide-out', 'prepare-in');
+                        }, 20);
+
+                    }, 600);
+
+                }, 8000); // 每8秒切换一次
+            }
         });
     </script>
 </body>
