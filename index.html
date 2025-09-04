@@ -31,12 +31,12 @@
             background-color: var(--main-bg-color);
             color: var(--primary-text-color);
             font-family: var(--font-jp-serif);
-            background-image: url('https://i.pinimg.com/originals/3b/38/b3/3b38b3424172731b816a1b183416972e.gif');
+            background-image: url('https://i.pinimg.com/originals/3b/38/b3/3b38/b3424172731b816a1b183416972e.gif');
             background-size: cover;
             background-position: center center;
         }
         
-        /* --- 新增：网站LOGO --- */
+        /* --- 网站LOGO --- */
         .site-logo {
             position: fixed;
             top: 40px;
@@ -341,25 +341,6 @@
             position: relative;
         }
 
-        /* --- Gemini 水印 --- */
-        .gemini-power-watermark {
-            position: absolute;
-            bottom: 8px;
-            right: 12px;
-            font-size: 10px;
-            font-family: monospace;
-            color: rgba(230, 217, 201, 0.15);
-            letter-spacing: 0.05em;
-            z-index: 5;
-            opacity: 0;
-            transition: opacity 0.8s ease-in 1.5s; /* 延迟出现 */
-            pointer-events: none;
-        }
-        #game-container.game-active .gemini-power-watermark {
-            opacity: 1;
-        }
-
-
         /* --- 角色创建界面 --- */
         #game-intro {
             position: absolute;
@@ -493,6 +474,26 @@
         #story-box::-webkit-scrollbar-track { background: transparent; }
         #story-box::-webkit-scrollbar-thumb { background-color: var(--accent-color-dark); }
         #story-text { white-space: pre-wrap; }
+
+        /* --- 新增：故事内水印 --- */
+        .story-watermark {
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+            font-size: 0.8rem;
+            font-family: monospace;
+            color: var(--primary-text-color);
+            opacity: 0;
+            margin-top: 1.5rem;
+            animation: simpleFadeIn 0.8s ease-out 0.2s forwards; /* 延迟淡入 */
+            opacity: 0.6;
+        }
+        .story-watermark svg {
+            width: 1em;
+            height: 1em;
+            fill: currentColor;
+        }
+
 
         #character-name-box {
             position: absolute;
@@ -743,7 +744,6 @@
                        <!-- JS generated -->
                     </div>
                 </div>
-                <div class="gemini-power-watermark">PoweredByGeminiSnow</div>
             </div>
         </section>
 
@@ -1032,11 +1032,13 @@
             }
 
             function typewriter(element, text, callback) {
-                element.textContent = '';
+                element.innerHTML = ''; // Use innerHTML to clear previous content
+                let currentText = '';
                 let i = 0;
                 function type() {
                     if (i < text.length) {
-                        element.textContent += text.charAt(i);
+                        currentText += text.charAt(i);
+                        element.innerHTML = currentText; // Update innerHTML
                         i++;
                         element.parentElement.scrollTop = element.parentElement.scrollHeight;
                         setTimeout(type, 30);
@@ -1053,6 +1055,18 @@
                 optionsContainer.innerHTML = '';
 
                 typewriter(storyTextElement, data.story, () => {
+                    // --- 新增/修改代码 ---
+                    const watermark = document.createElement('div');
+                    watermark.className = 'story-watermark';
+                    const notepadIconSVG = `
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M14,2H6A2,2,0,0,0,4,4V20a2,2,0,0,0,2,2H18a2,2,0,0,0,2-2V8Zm2,16H8V16h8Zm0-4H8V12h8Zm-3-5V4.5L18.5,10H13Z"></path>
+                        </svg>`;
+                    watermark.innerHTML = `${notepadIconSVG}<span>PoweredByGeminiSnow</span>`;
+                    storyTextElement.appendChild(watermark);
+                    storyTextElement.parentElement.scrollTop = storyTextElement.parentElement.scrollHeight;
+                    // --- 结束 ---
+                    
                     if (data.options && data.options.length > 0) {
                         data.options.forEach((optionText, index) => {
                             const button = document.createElement('button');
