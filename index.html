@@ -35,7 +35,7 @@
             background-size: cover;
             background-position: center center;
         }
-
+        
         /* --- 滚动容器与页面 --- */
         #scroll-container {
             width: 100%;
@@ -329,6 +329,7 @@
             position: relative;
         }
 
+        /* --- 角色创建界面 --- */
         #game-intro {
             position: absolute;
             inset: 0;
@@ -336,38 +337,15 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            text-align: center;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.7);
             backdrop-filter: blur(5px);
             padding: 2rem;
             z-index: 2;
             opacity: 1;
             transition: opacity 0.5s ease-out, backdrop-filter 0.5s ease-out;
-            --b-width: 2px;
-            --b-color: var(--accent-color);
-            --b-glow: 0 0 8px var(--accent-color-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
         }
-        #game-intro::before, #game-intro::after {
-            content: '';
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            border-color: var(--b-color);
-            border-style: solid;
-            transition: all 0.5s;
-        }
-        #game-intro::before { top: 20px; left: 20px; border-width: var(--b-width) 0 0 var(--b-width); }
-        #game-intro::after { top: 20px; right: 20px; border-width: var(--b-width) var(--b-width) 0 0; }
-        #game-intro .intro-content::before, #game-intro .intro-content::after {
-            content: '';
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            border-color: var(--b-color);
-            border-style: solid;
-        }
-        #game-intro .intro-content::before { bottom: 20px; left: 20px; border-width: 0 0 var(--b-width) var(--b-width); }
-        #game-intro .intro-content::after { bottom: 20px; right: 20px; border-width: 0 var(--b-width) var(--b-width) 0; }
         #game-container.game-active #game-intro {
             opacity: 0;
             pointer-events: none;
@@ -378,25 +356,67 @@
             color: var(--primary-text-color);
             letter-spacing: 0.2em;
             text-shadow: 0 0 15px var(--accent-color);
-            margin-bottom: 1.5rem;
-            animation: text-glow 3s infinite ease-in-out;
+            margin-bottom: 2rem;
         }
-        .intro-text {
-            font-size: clamp(1rem, 2.5vw, 1.1rem);
-            line-height: 1.8;
+        .character-form {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 400px;
+            text-align: left;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
             color: rgba(230, 217, 201, 0.8);
-            margin-bottom: 2.5rem;
         }
-        .intro-text::after {
-            content: ' ■';
-            animation: blink 1s infinite;
+        .form-group input[type="text"] {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 0.75rem;
+            color: var(--primary-text-color);
+            font-family: var(--font-jp-serif);
+            font-size: 1.1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
-        @keyframes blink { 50% { opacity: 0; } }
-        
+        .form-group input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px var(--accent-color-dark);
+        }
+        .radio-group {
+            display: flex;
+            gap: 1rem;
+        }
+        .radio-group input[type="radio"] {
+            display: none;
+        }
+        .radio-group label {
+            flex: 1;
+            text-align: center;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .radio-group input[type="radio"]:checked + label {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            color: white;
+            text-shadow: 0 0 5px black;
+        }
         #start-game-btn {
             font-family: var(--font-jp-serif);
-            font-size: clamp(1.2rem, 3vw, 1.5rem);
-            padding: 0.8rem 1.8rem;
+            font-size: 1.2rem;
+            padding: 0.8rem;
+            margin-top: 1rem;
             border-radius: 4px;
             border: 2px solid var(--accent-color);
             background: transparent;
@@ -404,6 +424,7 @@
             text-shadow: 0 0 10px var(--accent-color-dark);
             cursor: pointer;
             transition: all 0.3s;
+            width: 100%;
         }
         #start-game-btn:hover {
             background: var(--accent-color);
@@ -527,7 +548,7 @@
             50% { stroke-dashoffset: 0; transform: rotate(180deg); }
         }
 
-        /* --- 新增: 扩展页样式 --- */
+        /* --- 扩展页样式 --- */
         #expansion-page {
             padding: 0;
             background: var(--main-bg-color);
@@ -565,8 +586,9 @@
             color: white;
             text-align: center;
             width: 80%;
-            opacity: 1;
+            transition: opacity 0.5s ease-out 0.3s;
         }
+       
         .panel-content h2 {
             font-size: clamp(2rem, 5vw, 3.5rem);
             text-shadow: 0 1px 3px rgba(0,0,0,0.6), 0 0 10px rgba(255, 255, 255, 0.7), 0 0 20px rgba(255, 255, 255, 0.5);
@@ -584,9 +606,9 @@
             font-size: clamp(1.2rem, 2vw, 1.5rem);
         }
         .expansion-panel:not(:hover) .panel-content p {
-            font-size: clamp(0.7rem, 1vw, 0.8rem);
+            font-size: clamp(0.8rem, 1.5vw, 0.9rem);
         }
-
+        
         /* --- 移动端适配 --- */
         @media (max-width: 768px) {
             nav { flex-direction: column; gap: 1rem; align-items: center; }
@@ -646,12 +668,33 @@
         <section id="game-page" class="scroll-page">
             <div id="game-container">
                 <div id="game-intro">
-                    <div class="intro-content">
-                        <h2 class="intro-header">首次任务简报</h2>
-                        <p class="intro-text">
-                            身份已验证... 新人巡狩。<br>一份来自“天御柱会”总部的加密任务正在等待你的接收。
-                        </p>
-                        <button id="start-game-btn">接入安全线路</button>
+                    <h2 class="intro-header">巡狩档案登录</h2>
+                    <div class="character-form">
+                        <div class="form-group">
+                            <label for="char-name">代号</label>
+                            <input type="text" id="char-name" name="char-name" placeholder="输入你的行动代号" required>
+                        </div>
+                        <div class="form-group">
+                            <label>性别</label>
+                            <div class="radio-group">
+                                <input type="radio" id="gender-male" name="gender" value="男" checked>
+                                <label for="gender-male">男</label>
+                                <input type="radio" id="gender-female" name="gender" value="女">
+                                <label for="gender-female">女</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>初始能力评级</label>
+                            <div class="radio-group">
+                                <input type="radio" id="rating-c" name="rating" value="C级 (新人)" checked>
+                                <label for="rating-c">C级</label>
+                                <input type="radio" id="rating-b" name="rating" value="B级 (标准)">
+                                <label for="rating-b">B级</label>
+                                <input type="radio" id="rating-a" name="rating" value="A级 (精英)">
+                                <label for="rating-a">A级</label>
+                            </div>
+                        </div>
+                         <button id="start-game-btn">确认身份并开始任务</button>
                     </div>
                 </div>
                 <div id="game-ui">
@@ -666,7 +709,7 @@
             </div>
         </section>
 
-        <!-- 新增: 第4页, 扩展页 -->
+        <!-- 第4页, 扩展页 -->
         <section id="expansion-page" class="scroll-page">
             <div id="expansion-container">
                 <div class="expansion-panel" id="panel-story">
@@ -833,7 +876,6 @@
             const scrollArrow = document.querySelector('.scroll-down-arrow');
             scrollContainer.addEventListener('scroll', () => {
                 const pageHeight = window.innerHeight;
-                // 更新: 在第四页(索引为3)开始隐藏箭头
                 if (scrollContainer.scrollTop > pageHeight * 2.5) {
                     scrollArrow.classList.add('hidden');
                 } else {
@@ -881,7 +923,7 @@
             const characterNameBox = document.getElementById('character-name-box');
 
             let storyHistory = [];
-            const apiKey = ""; 
+            let userProfile = {};
 
             const responseSchema = {
                 type: "OBJECT",
@@ -914,21 +956,19 @@
                     </svg>
                     <span>正在通讯...</span>
                 </div>`;
-            async function generateStory(currentHistory) {
+
+            async function generateStory(currentHistory, profile) {
                 optionsContainer.innerHTML = loadingIndicatorHTML;
 
-                // 这里的 URL 从 Google API 地址变成了我们自己的后端地址
-                const apiUrl = '/api/generate'; 
-
-                // 我们将 prompt 和 schema 也一起发送给后端
+                const apiUrl = '/api/generate';
                 const payload = {
                     currentHistory,
                     systemPrompt,
-                    responseSchema
+                    responseSchema,
+                    userProfile: profile
                 };
 
                 try {
-                    // 注意这里的 fetch 调用变了
                     const response = await fetch(apiUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -936,23 +976,22 @@
                     });
 
                     if (!response.ok) {
-                        // 如果后端出错，在这里显示错误
                         const errorData = await response.json();
                         throw new Error(errorData.error || `API call failed: ${response.status}`);
                     }
 
-                    const result = await response.json(); // 直接获取后端转发来的JSON
+                    const result = await response.json();
                     const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
                     if (!jsonText) throw new Error("Invalid response from API.");
                     return JSON.parse(jsonText);
-
+                    
                 } catch (error) {
                     console.error("Error generating story:", error);
                     storyTextElement.textContent = `通讯中断... ${error.message}. 请刷新页面重试。`;
                     optionsContainer.innerHTML = '';
                     return null;
                 }
-}
+            }
 
             function typewriter(element, text, callback) {
                 element.textContent = '';
@@ -1011,7 +1050,7 @@
                 });
 
                 setTimeout(async () => {
-                    const modelResponse = await generateStory(storyHistory);
+                    const modelResponse = await generateStory(storyHistory, userProfile);
                     if (modelResponse) {
                         storyHistory.push({ role: "model", parts: [{ text: JSON.stringify(modelResponse) }] });
                         updateGameUI(modelResponse);
@@ -1019,19 +1058,34 @@
                 }, 300); // Wait for fade out animation
             }
 
-            async function startGame() {
-                gameContainer.classList.add('game-active');
+            startGameBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const nameInput = document.getElementById('char-name');
+                const name = nameInput.value.trim();
 
+                if (!name) {
+                    nameInput.style.borderColor = 'red';
+                    nameInput.placeholder = "代号不能为空!";
+                    return;
+                }
+                nameInput.style.borderColor = '';
+
+                const gender = document.querySelector('input[name="gender"]:checked').value;
+                const rating = document.querySelector('input[name="rating"]:checked').value;
+
+                userProfile = { name, gender, rating };
+
+                gameContainer.classList.add('game-active');
+                
                 setTimeout(async () => {
                     storyHistory = [{ role: "user", parts: [{ text: "开始游戏" }] }];
-                    const firstScene = await generateStory(storyHistory);
+                    const firstScene = await generateStory(storyHistory, userProfile);
                     if (firstScene) {
                         storyHistory.push({ role: "model", parts: [{ text: JSON.stringify(firstScene) }] });
                         updateGameUI(firstScene);
                     }
-                }, 500); // Wait for intro to fade out
-            }
-            startGameBtn.addEventListener('click', startGame);
+                }, 500);
+            });
         });
     </script>
 </body>
