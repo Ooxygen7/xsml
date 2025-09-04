@@ -327,24 +327,47 @@
         .card-title { font-size: 1.5rem; color: var(--accent-color); margin-bottom: 1rem; }
         .card-text { font-size: 1rem; line-height: 1.8; }
 
-        /* --- 游戏界面样式 --- */
+        /* ================= GALGAME UI REDESIGN ================= */
         #game-page {
             justify-content: center;
         }
         #game-container {
             width: 90%;
             max-width: 900px;
-            height: 70%;
-            max-height: 600px;
+            height: 80%;
+            max-height: 650px;
             display: flex;
-            flex-direction: column;
             position: relative;
-            background: rgba(0,0,0,0.7);
+            background: rgba(10, 2, 2, 0.6);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             overflow: hidden;
+            box-shadow: 0 0 30px rgba(215, 35, 35, 0.1);
+            backdrop-filter: blur(10px);
         }
-
+        #game-container::before, #game-container::after {
+            content: '';
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-color: var(--accent-color);
+            border-style: solid;
+            opacity: 0.5;
+        }
+        #game-container::before { top: 10px; left: 10px; border-width: 2px 0 0 2px; }
+        #game-container::after { top: 10px; right: 10px; border-width: 2px 2px 0 0; }
+        #game-ui::before, #game-ui::after { /* Use game-ui for bottom corners */
+            content: '';
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-color: var(--accent-color);
+            border-style: solid;
+            opacity: 0.5;
+        }
+        #game-ui::before { bottom: 10px; left: 10px; border-width: 0 0 2px 2px; }
+        #game-ui::after { bottom: 10px; right: 10px; border-width: 0 2px 2px 0; }
+        
         .game-screen {
             position: absolute;
             inset: 0;
@@ -355,26 +378,38 @@
             padding: 2rem;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.5s ease-out;
-            backdrop-filter: blur(5px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+            transform: scale(1.02);
         }
         .game-screen.active {
             opacity: 1;
             pointer-events: auto;
+            transform: scale(1);
         }
         
-        #game-start-menu .menu-title {
+        .menu-title {
             font-size: clamp(2rem, 6vw, 3rem);
-            margin-bottom: 2rem;
-            color: var(--accent-color);
-            text-shadow: 0 0 15px var(--accent-color-dark);
+            margin-bottom: 2.5rem;
+            color: var(--primary-text-color);
+            text-shadow: 0 0 10px var(--accent-color), 0 0 20px var(--accent-color-dark);
+            letter-spacing: 0.2em;
+            position: relative;
         }
-        #game-start-menu .menu-buttons {
+        .menu-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px; left: 50%;
+            transform: translateX(-50%);
+            width: 50%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+        }
+        
+        .menu-buttons {
             display: flex;
             flex-direction: column;
             gap: 1rem;
             width: 100%;
-            max-width: 300px;
+            max-width: 350px;
         }
         .menu-btn {
             font-family: var(--font-jp-serif);
@@ -386,45 +421,60 @@
             color: var(--primary-text-color);
             cursor: pointer;
             transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .menu-btn svg {
+            width: 1.2em;
+            height: 1.2em;
+            fill: currentColor;
+            opacity: 0.7;
+            transition: opacity 0.3s;
         }
         .menu-btn:hover {
-            background: var(--accent-color);
             border-color: var(--accent-color);
             color: white;
+            box-shadow: 0 0 15px var(--accent-color-dark);
+        }
+        .menu-btn:hover svg { opacity: 1; }
+        .menu-btn::before {
+            content: '';
+            position: absolute;
+            left: -100%; top: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+            opacity: 0.3;
+            transition: left 0.4s ease;
+        }
+        .menu-btn:hover::before {
+            left: 100%;
         }
 
         #character-creation-screen .intro-header {
             font-size: clamp(1.8rem, 5vw, 2.5rem);
             color: var(--primary-text-color);
-            letter-spacing: 0.2em;
             text-shadow: 0 0 15px var(--accent-color);
             margin-bottom: 2rem;
         }
         .character-form {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-            width: 100%;
-            max-width: 400px;
-            text-align: left;
-        }
-        .form-group {
-            display: flex;
-            flex-direction: column;
+            display: grid; grid-template-columns: 1fr; gap: 1.5rem;
+            width: 100%; max-width: 400px; text-align: left;
         }
         .form-group label {
-            font-size: 1rem;
-            margin-bottom: 0.5rem;
+            font-size: 1rem; margin-bottom: 0.5rem;
             color: rgba(230, 217, 201, 0.8);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
         }
         .form-group input[type="text"] {
             background: rgba(0,0,0,0.5);
             border: 1px solid var(--border-color);
-            border-radius: 4px;
-            padding: 0.75rem;
+            border-radius: 4px; padding: 0.75rem;
             color: var(--primary-text-color);
-            font-family: var(--font-jp-serif);
-            font-size: 1.1rem;
+            font-family: var(--font-jp-serif); font-size: 1.1rem;
             transition: border-color 0.3s, box-shadow 0.3s;
         }
         .form-group input[type="text"]:focus {
@@ -432,78 +482,44 @@
             border-color: var(--accent-color);
             box-shadow: 0 0 10px var(--accent-color-dark);
         }
-        .radio-group {
-            display: flex;
-            gap: 1rem;
-        }
-        .radio-group input[type="radio"] {
-            display: none;
-        }
+        .radio-group { display: flex; gap: 1rem; }
+        .radio-group input[type="radio"] { display: none; }
         .radio-group label {
-            flex: 1;
-            text-align: center;
+            flex: 1; text-align: center;
             padding: 0.75rem;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
+            border: 1px solid var(--border-color); border-radius: 4px;
             cursor: pointer;
-            transition: background-color 0.3s, border-color 0.3s;
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s, text-shadow 0.3s;
         }
         .radio-group input[type="radio"]:checked + label {
-            background-color: var(--accent-color);
-            border-color: var(--accent-color);
-            color: white;
-            text-shadow: 0 0 5px black;
+            background-color: var(--accent-color); border-color: var(--accent-color);
+            color: white; text-shadow: 0 0 5px black;
         }
-        #start-game-btn {
-            font-family: var(--font-jp-serif);
-            font-size: 1.2rem;
-            padding: 0.8rem;
-            margin-top: 1rem;
-            border-radius: 4px;
-            border: 2px solid var(--accent-color);
-            background: transparent;
-            color: var(--accent-color);
-            text-shadow: 0 0 10px var(--accent-color-dark);
-            cursor: pointer;
-            transition: all 0.3s;
-            width: 100%;
-        }
-        #start-game-btn:hover {
-            background: var(--accent-color);
-            color: white;
-            box-shadow: 0 0 20px var(--accent-color);
-        }
+        #start-game-btn { margin-top: 1rem; font-size: 1.2rem; padding: 0.8rem; }
 
-        #save-slots-screen {
-            justify-content: flex-start;
-        }
+        #save-slots-screen { justify-content: flex-start; }
         #save-slots-screen .back-btn {
-             position: absolute; top: 1.5rem; left: 1.5rem;
+             position: absolute; top: 2rem; left: 2rem;
+             padding: 0.5rem 1rem; font-size: 1rem;
         }
         .save-list {
-            width: 100%;
-            max-width: 500px;
-            margin-top: 5rem;
-            max-height: calc(100% - 6rem);
-            overflow-y: auto;
-            padding-right: 1rem;
+            width: 100%; max-width: 500px;
+            margin-top: 6rem; max-height: calc(100% - 7rem);
+            overflow-y: auto; padding-right: 1rem;
         }
         .save-list::-webkit-scrollbar { width: 4px; }
         .save-list::-webkit-scrollbar-track { background: transparent; }
         .save-list::-webkit-scrollbar-thumb { background-color: var(--border-color); }
 
         .save-slot {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            padding: 1rem 1.5rem;
-            margin-bottom: 1rem;
-            cursor: pointer;
-            transition: background 0.3s, border-color 0.3s;
+            background: rgba(0,0,0,0.3); border: 1px solid var(--border-color);
+            border-radius: 4px; padding: 1rem 1.5rem;
+            margin-bottom: 1rem; cursor: pointer;
+            transition: background 0.3s, border-color 0.3s, transform 0.3s;
         }
         .save-slot:hover {
-            background: rgba(215, 35, 35, 0.1);
-            border-color: var(--accent-color);
+            background: rgba(215, 35, 35, 0.1); border-color: var(--accent-color);
+            transform: scale(1.02);
         }
         .save-slot .char-name { font-size: 1.5rem; color: var(--primary-text-color); }
         .save-slot .save-date { font-size: 0.9rem; color: rgba(230, 217, 201, 0.6); margin-top: 0.25rem;}
@@ -511,164 +527,101 @@
 
 
         #save-action-modal {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(8px);
-            z-index: 2000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+            z-index: 2000; display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
         }
-        #save-action-modal.active {
-            opacity: 1; pointer-events: auto;
-        }
+        #save-action-modal.active { opacity: 1; pointer-events: auto; }
         .modal-content {
-            background: var(--main-bg-color);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 2rem;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-            position: relative;
+            background: #0a0505; border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 2rem; width: 90%; max-width: 400px;
+            text-align: center; position: relative;
+            box-shadow: 0 0 20px var(--accent-color-dark);
         }
         .modal-close-btn {
             position: absolute; top: 1rem; right: 1rem;
             background: none; border: none; font-size: 2rem;
-            color: var(--primary-text-color); cursor: pointer;
-            line-height: 1;
+            color: var(--primary-text-color); cursor: pointer; line-height: 1;
         }
-        .modal-content h3 { font-size: 1.8rem; margin-bottom: 1rem; }
+        .modal-content h3 { font-size: 1.8rem; margin-bottom: 1rem; color: var(--accent-color); }
         .modal-content p { color: rgba(230, 217, 201, 0.7); margin-bottom: 2rem;}
         .modal-buttons { display: flex; flex-direction: column; gap: 1rem; }
-        #delete-save-btn { background: var(--accent-color); color: white;}
-
+        #delete-save-btn { background: var(--accent-color); border-color: var(--accent-color); color: white;}
+        #delete-save-btn:hover { background: var(--accent-color-dark); }
 
         #game-ui {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            opacity: 0;
-            transition: opacity 0.5s ease-in;
+            width: 100%; height: 100%; display: flex;
+            flex-direction: column; opacity: 0; transition: opacity 0.5s ease-in;
             padding: 1rem;
+            pointer-events: none; /* BUG FIX: default to no pointer events */
+            position: relative; /* For pseudo elements */
         }
         #game-container.game-active #game-ui {
             opacity: 1;
+            pointer-events: auto; /* BUG FIX: enable pointer events when active */
         }
         #story-box {
-            background: transparent;
-            border: none;
-            padding: 2.5rem 1rem 1rem;
-            color: var(--primary-text-color);
-            font-size: clamp(1rem, 2.5vw, 1.2rem);
-            line-height: 1.8;
-            position: relative;
-            flex: 1;
-            min-height: 0;
-            overflow-y: auto;
+            background: transparent; border: none;
+            padding: 2.5rem 1rem 1rem; color: var(--primary-text-color);
+            font-size: clamp(1rem, 2.5vw, 1.2rem); line-height: 1.8;
+            position: relative; flex: 1; min-height: 0; overflow-y: auto;
         }
         
         .story-watermark {
-            display: flex;
-            align-items: center;
-            gap: 0.5em;
-            font-size: 0.8rem;
-            font-family: monospace;
+            display: flex; align-items: center; gap: 0.5em;
+            font-size: 0.8rem; font-family: monospace;
             color: var(--primary-text-color);
-            opacity: 0;
-            margin-top: 1.5rem;
-            animation: simpleFadeIn 0.8s ease-out 0.2s forwards;
+            margin-top: 1.5rem; animation: simpleFadeIn 0.8s ease-out 0.2s forwards;
             opacity: 0.6;
         }
-        .story-watermark svg {
-            width: 1em;
-            height: 1em;
-            fill: currentColor;
-        }
+        .story-watermark svg { width: 1em; height: 1em; fill: currentColor; }
 
 
         #character-name-box {
-            position: absolute;
-            top: 0;
-            left: 2rem;
-            background: var(--accent-color);
-            color: white;
+            position: absolute; top: 0; left: 1rem;
+            background: var(--accent-color); color: white;
             padding: 0.5rem 1.5rem;
-            border-radius: 5px;
-            font-size: 1.3rem;
-            text-shadow: 1px 1px 2px black;
-            transform: translateY(50%);
+            font-size: 1.3rem; text-shadow: 1px 1px 2px black;
             z-index: 3;
+            clip-path: polygon(0 0, 100% 0, calc(100% - 20px) 100%, 0 100%);
         }
         #options-container {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1rem;
-            padding-top: 1.5rem;
-            flex-shrink: 0;
-            min-height: 150px;
-            align-content: start;
+            display: grid; grid-template-columns: 1fr;
+            gap: 1rem; padding: 1.5rem 0 0.5rem 0;
+            flex-shrink: 0; min-height: 150px; align-content: start;
         }
         .option-btn {
-            background: rgba(10, 2, 2, 0.6);
-            border: 1px solid var(--border-color);
-            color: var(--primary-text-color);
-            padding: 1rem;
-            font-family: var(--font-jp-serif);
-            font-size: clamp(0.9rem, 2vw, 1.1rem);
-            text-align: left;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s, border-color 0.3s, transform 0.3s;
-            opacity: 0;
-            transform: translateY(10px);
+            background: rgba(10, 2, 2, 0.6); border: 1px solid var(--border-color);
+            color: var(--primary-text-color); padding: 1rem;
+            font-family: var(--font-jp-serif); font-size: clamp(0.9rem, 2vw, 1.1rem);
+            text-align: left; border-radius: 5px; cursor: pointer;
+            transition: background 0.3s, border-color 0.3s, transform 0.3s, letter-spacing 0.3s;
+            opacity: 0; transform: translateY(10px);
         }
-        .option-btn.visible {
-            animation: option-fade-in 0.5s ease-out forwards;
-        }
-        .option-btn.fade-out {
-            animation: option-fade-out 0.3s ease-in forwards;
-        }
-        @keyframes option-fade-in {
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .option-btn.visible { animation: option-fade-in 0.5s ease-out forwards; }
+        .option-btn.fade-out { animation: option-fade-out 0.3s ease-in forwards; }
+        @keyframes option-fade-in { to { opacity: 1; transform: translateY(0); } }
         @keyframes option-fade-out {
             from { opacity: 1; transform: translateY(0); }
             to { opacity: 0; transform: translateY(-10px); }
         }
 
         .option-btn:hover {
-            background: rgba(215, 35, 35, 0.2);
-            border-color: var(--accent-color);
-            transform: scale(1.02);
+            background: rgba(215, 35, 35, 0.2); border-color: var(--accent-color);
+            transform: scale(1.02); letter-spacing: 0.05em;
         }
         .option-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         #loading-indicator {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 1rem;
-            color: rgba(230, 217, 201, 0.7);
-            width: 100%;
-            height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            gap: 1rem; color: rgba(230, 217, 201, 0.7);
+            width: 100%; height: 100%;
         }
-        .loading-svg {
-            width: 30px;
-            height: 30px;
-            animation: rotate-ring 1.5s linear infinite;
-        }
+        .loading-svg { width: 30px; height: 30px; animation: rotate-ring 1.5s linear infinite; }
         .loading-svg circle {
-            fill: none;
-            stroke: var(--accent-color);
-            stroke-width: 2;
-            stroke-dasharray: 100;
-            stroke-dashoffset: 100;
+            fill: none; stroke: var(--accent-color);
+            stroke-width: 2; stroke-dasharray: 100; stroke-dashoffset: 100;
             animation: svg-load 1.5s cubic-bezier(0.5, 0, 0.5, 1) infinite;
             transform-origin: center;
         }
@@ -676,6 +629,7 @@
             0%, 100% { stroke-dashoffset: 100; transform: rotate(-90deg); }
             50% { stroke-dashoffset: 0; transform: rotate(180deg); }
         }
+        /* ================= END REDESIGN ================= */
 
         /* --- 扩展页样式 --- */
         #expansion-page {
@@ -753,7 +707,7 @@
             .viewer-title::before { margin-bottom: 1rem; }
             #viewer-scroll-wrapper { padding: 10vh 5vw; }
             .decorative-trim { display: none; }
-            #game-container { height: 80%; }
+            #game-container { height: 85%; }
             #options-container { min-height: 180px; }
             #expansion-container { flex-direction: column; } /* 移动端改为垂直布局 */
         }
@@ -804,15 +758,21 @@
             <div id="game-container">
                 
                 <div id="game-start-menu" class="game-screen active">
-                    <h2 class="menu-title">巡狩任务</h2>
+                    <h2 class="menu-title">巡狩任务终端</h2>
                     <div class="menu-buttons">
-                        <button id="new-game-btn" class="menu-btn">新的开始</button>
-                        <button id="load-game-btn" class="menu-btn">读取存档</button>
+                        <button id="new-game-btn" class="menu-btn">
+                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19.4,5.6a1,1,0,0,0-1.4-1.4L12,10.17,5.92,4.08A1,1,0,0,0,4.5,5.5L10.59,11.59,4.5,17.68a1,1,0,0,0,1.42,1.42L12,13,18.08,19.1a1,1,0,0,0,1.42-1.42L13.41,11.59Z"/></svg>
+                            <span>新的开始</span>
+                        </button>
+                        <button id="load-game-btn" class="menu-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.5,6.5a1,1,0,0,0-.46-.82l-7-4a1,1,0,0,0-1,0l-7,4a1,1,0,0,0,0,1.64l7,4a1,1,0,0,0,1,0l7-4A1,1,0,0,0,20.5,6.5Zm-8,2.83-5.24-3,5.24-3,5.24,3ZM3.5,9.15l7,4a1,1,0,0,0,1,0l7-4a1,1,0,0,0-1-1.64L12,10.67,5.5,7.15a1,1,0,0,0-1,1.64l-1,.6Zm0,5,7,4a1,1,0,0,0,1,0l7-4a1,1,0,0,0-1-1.64L12,15.67,5.5,12.15a1,1,0,0,0-1,1.64l-1,.6Z"/></svg>
+                            <span>读取存档</span>
+                        </button>
                     </div>
                 </div>
 
                 <div id="character-creation-screen" class="game-screen">
-                    <h2 class="intro-header">巡狩档案登录</h2>
+                    <h2 class="intro-header">建立巡狩档案</h2>
                     <div class="character-form">
                         <div class="form-group">
                             <label for="char-name">代号</label>
@@ -838,7 +798,10 @@
                                 <label for="rating-a">A级</label>
                             </div>
                         </div>
-                         <button id="start-game-btn">确认身份并开始任务</button>
+                         <button id="start-game-btn" class="menu-btn">
+                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.71,6.29a1,1,0,0,0-1.42,0l-11,11a1,1,0,0,1-1.42,0l-4-4a1,1,0,0,0-1.42,1.42l4,4a3,3,0,0,0,4.24,0l11-11A1,1,0,0,0,21.71,6.29Z"/></svg>
+                             <span>确认身份并开始任务</span>
+                        </button>
                     </div>
                 </div>
 
@@ -847,7 +810,7 @@
                     <div class="save-list">
                          <h2 class="menu-title">读取存档</h2>
                          <div id="save-list-container"></div>
-                         <p id="no-saves-message" style="display: none;">暂无存档</p>
+                         <p id="no-saves-message" style="display: none;">暂无存档记录</p>
                     </div>
                 </div>
 
@@ -1141,7 +1104,7 @@
                     id: currentSaveId || saveDate.getTime(),
                     profile: userProfile,
                     history: storyHistory,
-                    date: saveDate.toLocaleString('zh-CN')
+                    date: saveDate.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
                 };
 
                 const existingSaveIndex = saves.findIndex(s => s.id === newSave.id);
@@ -1364,4 +1327,5 @@
     </script>
 </body>
 </html>
+
 
