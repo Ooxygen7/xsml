@@ -339,31 +339,61 @@
             display: flex;
             flex-direction: column;
             position: relative;
+            background: rgba(0,0,0,0.7);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
         }
 
-        /* --- 角色创建界面 --- */
-        #game-intro {
+        .game-screen {
             position: absolute;
             inset: 0;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(5px);
             padding: 2rem;
-            z-index: 2;
-            opacity: 1;
-            transition: opacity 0.5s ease-out, backdrop-filter 0.5s ease-out;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-        }
-        #game-container.game-active #game-intro {
             opacity: 0;
             pointer-events: none;
-            backdrop-filter: blur(0px);
+            transition: opacity 0.5s ease-out;
+            backdrop-filter: blur(5px);
         }
-        .intro-header {
+        .game-screen.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        #game-start-menu .menu-title {
+            font-size: clamp(2rem, 6vw, 3rem);
+            margin-bottom: 2rem;
+            color: var(--accent-color);
+            text-shadow: 0 0 15px var(--accent-color-dark);
+        }
+        #game-start-menu .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+            max-width: 300px;
+        }
+        .menu-btn {
+            font-family: var(--font-jp-serif);
+            font-size: 1.5rem;
+            padding: 1rem;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            background: rgba(0,0,0,0.4);
+            color: var(--primary-text-color);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .menu-btn:hover {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: white;
+        }
+
+        #character-creation-screen .intro-header {
             font-size: clamp(1.8rem, 5vw, 2.5rem);
             color: var(--primary-text-color);
             letter-spacing: 0.2em;
@@ -444,6 +474,80 @@
             box-shadow: 0 0 20px var(--accent-color);
         }
 
+        #save-slots-screen {
+            justify-content: flex-start;
+        }
+        #save-slots-screen .back-btn {
+             position: absolute; top: 1.5rem; left: 1.5rem;
+        }
+        .save-list {
+            width: 100%;
+            max-width: 500px;
+            margin-top: 5rem;
+            max-height: calc(100% - 6rem);
+            overflow-y: auto;
+            padding-right: 1rem;
+        }
+        .save-list::-webkit-scrollbar { width: 4px; }
+        .save-list::-webkit-scrollbar-track { background: transparent; }
+        .save-list::-webkit-scrollbar-thumb { background-color: var(--border-color); }
+
+        .save-slot {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: background 0.3s, border-color 0.3s;
+        }
+        .save-slot:hover {
+            background: rgba(215, 35, 35, 0.1);
+            border-color: var(--accent-color);
+        }
+        .save-slot .char-name { font-size: 1.5rem; color: var(--primary-text-color); }
+        .save-slot .save-date { font-size: 0.9rem; color: rgba(230, 217, 201, 0.6); margin-top: 0.25rem;}
+        #no-saves-message { text-align: center; margin-top: 3rem; color: rgba(230, 217, 201, 0.6);}
+
+
+        #save-action-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        #save-action-modal.active {
+            opacity: 1; pointer-events: auto;
+        }
+        .modal-content {
+            background: var(--main-bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            position: relative;
+        }
+        .modal-close-btn {
+            position: absolute; top: 1rem; right: 1rem;
+            background: none; border: none; font-size: 2rem;
+            color: var(--primary-text-color); cursor: pointer;
+            line-height: 1;
+        }
+        .modal-content h3 { font-size: 1.8rem; margin-bottom: 1rem; }
+        .modal-content p { color: rgba(230, 217, 201, 0.7); margin-bottom: 2rem;}
+        .modal-buttons { display: flex; flex-direction: column; gap: 1rem; }
+        #delete-save-btn { background: var(--accent-color); color: white;}
+
+
         #game-ui {
             width: 100%;
             height: 100%;
@@ -451,31 +555,24 @@
             flex-direction: column;
             opacity: 0;
             transition: opacity 0.5s ease-in;
+            padding: 1rem;
         }
         #game-container.game-active #game-ui {
             opacity: 1;
         }
         #story-box {
-            background: rgba(0, 0, 0, 0.75);
-            border: 1px solid var(--border-color);
-            padding: 2.5rem 2rem 2rem;
-            border-radius: 8px;
-            overflow-y: auto;
+            background: transparent;
+            border: none;
+            padding: 2.5rem 1rem 1rem;
             color: var(--primary-text-color);
             font-size: clamp(1rem, 2.5vw, 1.2rem);
             line-height: 1.8;
-            scrollbar-width: thin;
-            scrollbar-color: var(--accent-color-dark) transparent;
             position: relative;
-            flex: 1; /* Key for layout */
-            min-height: 0; /* Prevents flexbox overflow */
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
         }
-        #story-box::-webkit-scrollbar { width: 6px; }
-        #story-box::-webkit-scrollbar-track { background: transparent; }
-        #story-box::-webkit-scrollbar-thumb { background-color: var(--accent-color-dark); }
-        #story-text { white-space: pre-wrap; }
-
-        /* --- 新增：故事内水印 --- */
+        
         .story-watermark {
             display: flex;
             align-items: center;
@@ -485,7 +582,7 @@
             color: var(--primary-text-color);
             opacity: 0;
             margin-top: 1.5rem;
-            animation: simpleFadeIn 0.8s ease-out 0.2s forwards; /* 延迟淡入 */
+            animation: simpleFadeIn 0.8s ease-out 0.2s forwards;
             opacity: 0.6;
         }
         .story-watermark svg {
@@ -505,7 +602,7 @@
             border-radius: 5px;
             font-size: 1.3rem;
             text-shadow: 1px 1px 2px black;
-            transform: translateY(-50%);
+            transform: translateY(50%);
             z-index: 3;
         }
         #options-container {
@@ -513,8 +610,8 @@
             grid-template-columns: 1fr;
             gap: 1rem;
             padding-top: 1.5rem;
-            flex-shrink: 0; /* Key for layout */
-            min-height: 150px; /* Reserve space */
+            flex-shrink: 0;
+            min-height: 150px;
             align-content: start;
         }
         .option-btn {
@@ -705,7 +802,16 @@
         <!-- 第3页, Galgame 界面 -->
         <section id="game-page" class="scroll-page">
             <div id="game-container">
-                <div id="game-intro">
+                
+                <div id="game-start-menu" class="game-screen active">
+                    <h2 class="menu-title">巡狩任务</h2>
+                    <div class="menu-buttons">
+                        <button id="new-game-btn" class="menu-btn">新的开始</button>
+                        <button id="load-game-btn" class="menu-btn">读取存档</button>
+                    </div>
+                </div>
+
+                <div id="character-creation-screen" class="game-screen">
                     <h2 class="intro-header">巡狩档案登录</h2>
                     <div class="character-form">
                         <div class="form-group">
@@ -735,6 +841,16 @@
                          <button id="start-game-btn">确认身份并开始任务</button>
                     </div>
                 </div>
+
+                <div id="save-slots-screen" class="game-screen">
+                    <button class="menu-btn back-btn" id="back-to-menu-btn">&lt; 返回</button>
+                    <div class="save-list">
+                         <h2 class="menu-title">读取存档</h2>
+                         <div id="save-list-container"></div>
+                         <p id="no-saves-message" style="display: none;">暂无存档</p>
+                    </div>
+                </div>
+
                 <div id="game-ui">
                     <div id="character-name-box">???</div>
                     <div id="story-box">
@@ -786,6 +902,20 @@
             <div id="viewer-content"><!-- 内容由JS注入 --></div>
         </div>
     </div>
+
+    <!-- 存档操作 Modal -->
+    <div id="save-action-modal">
+        <div class="modal-content">
+            <button class="modal-close-btn">&times;</button>
+            <h3 id="modal-char-name"></h3>
+            <p id="modal-save-date"></p>
+            <div class="modal-buttons">
+                <button class="menu-btn" id="continue-save-btn">使用此存档继续</button>
+                <button class="menu-btn" id="delete-save-btn">删除该存档</button>
+            </div>
+        </div>
+    </div>
+
 
     <script>
         const jsonData = {
@@ -955,74 +1085,150 @@
 
             // --- 游戏逻辑 ---
             const gameContainer = document.getElementById('game-container');
+            const gameUi = document.getElementById('game-ui');
+            const startMenuScreen = document.getElementById('game-start-menu');
+            const newGameBtn = document.getElementById('new-game-btn');
+            const loadGameBtn = document.getElementById('load-game-btn');
+            
+            const characterCreationScreen = document.getElementById('character-creation-screen');
             const startGameBtn = document.getElementById('start-game-btn');
+            
+            const saveSlotsScreen = document.getElementById('save-slots-screen');
+            const saveListContainer = document.getElementById('save-list-container');
+            const noSavesMessage = document.getElementById('no-saves-message');
+            const backToMenuBtn = document.getElementById('back-to-menu-btn');
+            
+            const saveActionModal = document.getElementById('save-action-modal');
+            const modalCloseBtn = saveActionModal.querySelector('.modal-close-btn');
+            const continueSaveBtn = document.getElementById('continue-save-btn');
+            const deleteSaveBtn = document.getElementById('delete-save-btn');
+            
             const storyTextElement = document.getElementById('story-text');
             const optionsContainer = document.getElementById('options-container');
             const characterNameBox = document.getElementById('character-name-box');
 
             let storyHistory = [];
             let userProfile = {};
+            let currentSaveId = null;
+            const SAVE_KEY = 'xunshou-saves';
 
             const responseSchema = {
                 type: "OBJECT",
-                properties: {
-                    "character": { "type": "STRING", "description": "说话角色的名字。旁白请用 '旁白'。" },
-                    "story": { "type": "STRING", "description": "故事的下一部分。应引人入胜、细节丰富。" },
-                    "options": {
-                        "type": "ARRAY",
-                        "description": "提供给玩家的三个清晰、有意义的选项。",
-                        "items": { "type": "STRING" }
-                    }
-                },
+                properties: { "character": { "type": "STRING" }, "story": { "type": "STRING" }, "options": { "type": "ARRAY", "items": { "type": "STRING" } } },
                 required: ["character", "story", "options"]
             };
 
-            const systemPrompt = `你是一个互动式文字冒险游戏的地下城主（DM）。
-            世界观：现代日本，一个名为“巡狩”的古老组织在暗中保护世界免受恶魔和恶鬼的侵害。玩家是一名刚刚觉醒“灵视”能力，被“天御柱会”招募的新人巡狩。你的任务是引导玩家完成他的第一个任务。
-            规则：
-            1. 始终以JSON格式回应，并严格遵守提供的schema。
-            2. 剧情要悬疑、紧张，充满神秘感和超自然元素。
-            3. "options"字段必须提供三个选项，且严格遵循三种行为模式：1. 激进（直接行动，有风险但可能收益高）。2. 试探（收集信息，询问细节）。3. 保守（谨慎行事，避免冲突）。请直接返回选项文本，不要在文本前标注行为类型。
-            4. "character"字段应标明说话者的名字，如果是场景描述，则使用“旁白”。
-            5. 不要轻易结束游戏，保持故事的连续性。
-            现在，开始游戏的第一幕：新人巡狩第一次来到天御柱会的秘密据点，接到了他的第一个任务简报。`;
+            const systemPrompt = `你是一个互动式文字冒险游戏的地下城主（DM）。世界观：现代日本，一个名为“巡狩”的古老组织在暗中保护世界免受恶魔和恶鬼的侵害。玩家是一名刚刚觉醒“灵视”能力，被“天御柱会”招募的新人巡狩。你的任务是引导玩家完成他的第一个任务。规则：1. 始终以JSON格式回应。2. 剧情要悬疑、紧张。3. "options"字段必须提供三个选项，严格遵循三种行为模式：1. 激进（直接行动）。2. 试探（收集信息）。3. 保守（谨慎行事）。请直接返回选项文本。4. "character"字段应标明说话者的名字，或“旁白”。5. 保持故事的连续性。现在，开始游戏的第一幕：新人巡狩第一次来到天御柱会的秘密据点，接到了他的第一个任务简报。`;
             
-            const loadingIndicatorHTML = `
-                <div id="loading-indicator">
-                    <svg class="loading-svg" viewBox="0 0 40 40">
-                        <circle cx="20" cy="20" r="18"></circle>
-                    </svg>
-                    <span>正在通讯...</span>
-                </div>`;
+            const loadingIndicatorHTML = `<div id="loading-indicator"><svg class="loading-svg" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18"></circle></svg><span>正在通讯...</span></div>`;
 
-            async function generateStory(currentHistory, profile) {
-                optionsContainer.innerHTML = loadingIndicatorHTML;
+            // --- UI 切换函数 ---
+            function showScreen(screenElement) {
+                document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
+                screenElement.classList.add('active');
+            }
 
-                const apiUrl = '/api/generate';
-                const payload = {
-                    currentHistory,
-                    systemPrompt,
-                    responseSchema,
-                    userProfile: profile
+            // --- 存档功能 ---
+            function getSaves() {
+                const saves = localStorage.getItem(SAVE_KEY);
+                return saves ? JSON.parse(saves) : [];
+            }
+
+            function saveGame() {
+                const saves = getSaves();
+                const saveDate = new Date();
+                const newSave = {
+                    id: currentSaveId || saveDate.getTime(),
+                    profile: userProfile,
+                    history: storyHistory,
+                    date: saveDate.toLocaleString('zh-CN')
                 };
 
-                try {
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
+                const existingSaveIndex = saves.findIndex(s => s.id === newSave.id);
+                if (existingSaveIndex > -1) {
+                    saves[existingSaveIndex] = newSave; // 更新存档
+                } else {
+                    saves.push(newSave); // 新存档
+                }
+                
+                saves.sort((a, b) => new Date(b.id) - new Date(a.id)); // 按时间排序
+                localStorage.setItem(SAVE_KEY, JSON.stringify(saves));
+                currentSaveId = newSave.id; // 确保当前游戏与此存档ID关联
+            }
 
+            function loadSaveList() {
+                const saves = getSaves();
+                saveListContainer.innerHTML = '';
+                if (saves.length === 0) {
+                    noSavesMessage.style.display = 'block';
+                } else {
+                    noSavesMessage.style.display = 'none';
+                    saves.forEach(save => {
+                        const slot = document.createElement('div');
+                        slot.className = 'save-slot';
+                        slot.dataset.saveId = save.id;
+                        slot.innerHTML = `<div class="char-name">${save.profile.name}</div><div class="save-date">${save.date}</div>`;
+                        slot.addEventListener('click', () => openSaveActionModal(save));
+                        saveListContainer.appendChild(slot);
+                    });
+                }
+            }
+
+            function deleteSave(saveId) {
+                let saves = getSaves();
+                saves = saves.filter(s => s.id !== saveId);
+                localStorage.setItem(SAVE_KEY, JSON.stringify(saves));
+                loadSaveList();
+                closeSaveActionModal();
+            }
+            
+            function continueFromSave(save) {
+                userProfile = save.profile;
+                storyHistory = save.history;
+                currentSaveId = save.id;
+                
+                gameContainer.classList.add('game-active');
+                showScreen(gameUi);
+                closeSaveActionModal();
+                
+                const lastModelResponseText = storyHistory[storyHistory.length - 1]?.parts[0]?.text;
+                if(lastModelResponseText) {
+                    try {
+                        const lastModelResponse = JSON.parse(lastModelResponseText);
+                        updateGameUI(lastModelResponse, true); // true表示这是加载，不需要打字机效果
+                    } catch(e) { console.error("无法解析存档中的最后一条消息", e); }
+                }
+            }
+
+            // --- Modal 控制 ---
+            let activeSave = null;
+            function openSaveActionModal(save) {
+                activeSave = save;
+                saveActionModal.querySelector('#modal-char-name').textContent = save.profile.name;
+                saveActionModal.querySelector('#modal-save-date').textContent = save.date;
+                saveActionModal.classList.add('active');
+            }
+            function closeSaveActionModal() {
+                saveActionModal.classList.remove('active');
+                activeSave = null;
+            }
+            
+            // --- 核心游戏 API 调用与 UI 更新 ---
+            async function generateStory(currentHistory, profile) {
+                optionsContainer.innerHTML = loadingIndicatorHTML;
+                const apiUrl = '/api/generate';
+                const payload = { currentHistory, systemPrompt, responseSchema, userProfile: profile };
+
+                try {
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                     if (!response.ok) {
                         const errorData = await response.json();
                         throw new Error(errorData.error || `API call failed: ${response.status}`);
                     }
-
                     const result = await response.json();
                     const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
                     if (!jsonText) throw new Error("Invalid response from API.");
                     return JSON.parse(jsonText);
-                    
                 } catch (error) {
                     console.error("Error generating story:", error);
                     storyTextElement.textContent = `通讯中断... ${error.message}. 请刷新页面重试。`;
@@ -1032,13 +1238,13 @@
             }
 
             function typewriter(element, text, callback) {
-                element.innerHTML = ''; // Use innerHTML to clear previous content
+                element.innerHTML = '';
                 let currentText = '';
                 let i = 0;
                 function type() {
                     if (i < text.length) {
                         currentText += text.charAt(i);
-                        element.innerHTML = currentText; // Update innerHTML
+                        element.innerHTML = currentText;
                         i++;
                         element.parentElement.scrollTop = element.parentElement.scrollHeight;
                         setTimeout(type, 30);
@@ -1049,37 +1255,38 @@
                 type();
             }
 
-            function updateGameUI(data) {
+            function updateGameUI(data, isLoad = false) {
                 if (!data) return;
                 characterNameBox.textContent = data.character || '???';
                 optionsContainer.innerHTML = '';
 
-                typewriter(storyTextElement, data.story, () => {
-                    // --- 新增/修改代码 ---
+                const addWatermark = () => {
                     const watermark = document.createElement('div');
                     watermark.className = 'story-watermark';
-                    const notepadIconSVG = `
-                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M14,2H6A2,2,0,0,0,4,4V20a2,2,0,0,0,2,2H18a2,2,0,0,0,2-2V8Zm2,16H8V16h8Zm0-4H8V12h8Zm-3-5V4.5L18.5,10H13Z"></path>
-                        </svg>`;
+                    const notepadIconSVG = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14,2H6A2,2,0,0,0,4,4V20a2,2,0,0,0,2,2H18a2,2,0,0,0,2-2V8Zm2,16H8V16h8Zm0-4H8V12h8Zm-3-5V4.5L18.5,10H13Z"></path></svg>`;
                     watermark.innerHTML = `${notepadIconSVG}<span>PoweredByGeminiSnow</span>`;
                     storyTextElement.appendChild(watermark);
                     storyTextElement.parentElement.scrollTop = storyTextElement.parentElement.scrollHeight;
-                    // --- 结束 ---
-                    
-                    if (data.options && data.options.length > 0) {
-                        data.options.forEach((optionText, index) => {
-                            const button = document.createElement('button');
-                            button.className = 'option-btn';
-                            button.textContent = optionText;
-                            button.style.animationDelay = `${index * 100}ms`;
-                            button.onclick = () => handleOptionSelect(optionText);
-                            optionsContainer.appendChild(button);
-                            // Trigger animation
-                            setTimeout(() => button.classList.add('visible'), 20);
-                        });
-                    }
-                });
+                };
+
+                if (isLoad) {
+                    storyTextElement.innerHTML = data.story;
+                    addWatermark();
+                } else {
+                    typewriter(storyTextElement, data.story, addWatermark);
+                }
+                
+                if (data.options && data.options.length > 0) {
+                    data.options.forEach((optionText, index) => {
+                        const button = document.createElement('button');
+                        button.className = 'option-btn';
+                        button.textContent = optionText;
+                        button.style.animationDelay = `${index * 100}ms`;
+                        button.onclick = () => handleOptionSelect(optionText);
+                        optionsContainer.appendChild(button);
+                        setTimeout(() => button.classList.add('visible'), 20);
+                    });
+                }
             }
 
             async function handleOptionSelect(choice) {
@@ -1105,16 +1312,31 @@
                     const modelResponse = await generateStory(storyHistory, userProfile);
                     if (modelResponse) {
                         storyHistory.push({ role: "model", parts: [{ text: JSON.stringify(modelResponse) }] });
+                        saveGame(); // 自动存档
                         updateGameUI(modelResponse);
                     }
-                }, 300); // Wait for fade out animation
+                }, 300);
             }
+
+            // --- 事件监听器 ---
+            newGameBtn.addEventListener('click', () => showScreen(characterCreationScreen));
+            loadGameBtn.addEventListener('click', () => {
+                loadSaveList();
+                showScreen(saveSlotsScreen);
+            });
+            backToMenuBtn.addEventListener('click', () => showScreen(startMenuScreen));
+            modalCloseBtn.addEventListener('click', closeSaveActionModal);
+            deleteSaveBtn.addEventListener('click', () => {
+                if (activeSave) deleteSave(activeSave.id);
+            });
+            continueSaveBtn.addEventListener('click', () => {
+                if (activeSave) continueFromSave(activeSave);
+            });
 
             startGameBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
                 const nameInput = document.getElementById('char-name');
                 const name = nameInput.value.trim();
-
                 if (!name) {
                     nameInput.style.borderColor = 'red';
                     nameInput.placeholder = "代号不能为空!";
@@ -1124,19 +1346,19 @@
 
                 const gender = document.querySelector('input[name="gender"]:checked').value;
                 const rating = document.querySelector('input[name="rating"]:checked').value;
-
                 userProfile = { name, gender, rating };
+                currentSaveId = new Date().getTime(); // 为新游戏创建ID
 
                 gameContainer.classList.add('game-active');
+                showScreen(gameUi);
                 
-                setTimeout(async () => {
-                    storyHistory = [{ role: "user", parts: [{ text: "开始游戏" }] }];
-                    const firstScene = await generateStory(storyHistory, userProfile);
-                    if (firstScene) {
-                        storyHistory.push({ role: "model", parts: [{ text: JSON.stringify(firstScene) }] });
-                        updateGameUI(firstScene);
-                    }
-                }, 500);
+                storyHistory = [{ role: "user", parts: [{ text: "开始游戏" }] }];
+                const firstScene = await generateStory(storyHistory, userProfile);
+                if (firstScene) {
+                    storyHistory.push({ role: "model", parts: [{ text: JSON.stringify(firstScene) }] });
+                    saveGame(); // 第一次自动存档
+                    updateGameUI(firstScene);
+                }
             });
         });
     </script>
