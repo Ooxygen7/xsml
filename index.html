@@ -36,6 +36,18 @@
             background-position: center center;
         }
         
+        /* --- 新增：网站LOGO --- */
+        .site-logo {
+            position: fixed;
+            top: 40px;
+            left: 50px;
+            z-index: 1000;
+            width: 180px;
+            opacity: 0; /* 由 fade-in-on-load 控制 */
+            transition: opacity 0.8s ease;
+            pointer-events: none;
+        }
+
         /* --- 滚动容器与页面 --- */
         #scroll-container {
             width: 100%;
@@ -329,6 +341,25 @@
             position: relative;
         }
 
+        /* --- Gemini 水印 --- */
+        .gemini-power-watermark {
+            position: absolute;
+            bottom: 8px;
+            right: 12px;
+            font-size: 10px;
+            font-family: monospace;
+            color: rgba(230, 217, 201, 0.15);
+            letter-spacing: 0.05em;
+            z-index: 5;
+            opacity: 0;
+            transition: opacity 0.8s ease-in 1.5s; /* 延迟出现 */
+            pointer-events: none;
+        }
+        #game-container.game-active .gemini-power-watermark {
+            opacity: 1;
+        }
+
+
         /* --- 角色创建界面 --- */
         #game-intro {
             position: absolute;
@@ -611,6 +642,11 @@
         
         /* --- 移动端适配 --- */
         @media (max-width: 768px) {
+            .site-logo {
+                left: 20px;
+                top: 20px;
+                width: 120px;
+            }
             nav { flex-direction: column; gap: 1rem; align-items: center; }
             .nav-item { font-size: 10vw; }
             .nav-item:hover { text-shadow: none; }
@@ -626,6 +662,7 @@
     </style>
 </head>
 <body>
+    <img src="logo.png" alt="巡狩名录 Logo" class="site-logo fade-in-on-load" onerror="this.style.display='none'">
     <!-- 加载动画 -->
     <div id="loader">
         <div class="loader-rings">
@@ -706,6 +743,7 @@
                        <!-- JS generated -->
                     </div>
                 </div>
+                <div class="gemini-power-watermark">PoweredByGeminiSnow</div>
             </div>
         </section>
 
@@ -1090,8 +1128,4 @@
     </script>
 </body>
 </html>
-
-
-
-
 
